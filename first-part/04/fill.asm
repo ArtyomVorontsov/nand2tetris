@@ -8,19 +8,13 @@ D=A
 @black
 M=-1
 
-// value by which we move draw pointer
-@1	
-D=A
-@s
-M=D
-
 // width in 16bit
 @32	
 D=A
 @width
 M=D
 
-// height in 16bit
+// height in lines
 @256
 D=A
 @height
@@ -40,8 +34,6 @@ M=D
 (ROW_LOOP)
 (LINE_LOOP)
 
-@v
-M=M+1
 
 @24576 // get value from keyboard 
 D=M
@@ -64,6 +56,8 @@ D=M
 A=M
 M=D	// put desired color to pixel
 
+@v
+M=M+1
 @j
 M=M+1
 @width
@@ -92,9 +86,6 @@ M=0
 M=0
 
 @v
-M=0
-
-@k
 M=0
 
 @RENDER
