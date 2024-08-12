@@ -1,0 +1,130 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/5/CPU.hdl
+/**
+ * The Hack Central Processing unit (CPU).
+ * Parses the binary code in the instruction input and executes it according to the
+ * Hack machine language specification. In the case of a C-instruction, computes the
+ * function specified by the instruction. If the instruction specifies to read a memory
+ * value, the inM input is expected to contain this value. If the instruction specifies
+ * to write a value to the memory, sets the outM output to this value, sets the addressM
+ * output to the target address, and asserts the writeM output (when writeM = 0, any
+ * value may appear in outM).
+ * If the reset input is 0, computes the address of the next instruction and sets the
+ * pc output to that value. If the reset input is 1, sets pc to 0.
+ * Note: The outM and writeM outputs are combinational: they are affected by the
+ * instruction's execution during the current cycle. The addressM and pc outputs are
+ * clocked: although they are affected by the instruction's execution, they commit to
+ * their new values only in the next cycle.
+ */
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+
+    DRegister(in=dest, load=loadD, out=dValue);
+    ARegister(in=aDest, load=loadAa, out=aValue, out[0..14]=addressM);
+
+    // A command computation
+    Not(in=instruction[15], out=isACommand);
+    Not(in=isACommand, out=isNotACommand);
+    Or(a= loadA, b=isACommand, out=loadAa);
+    Mux16(a=dest, b=instruction, sel=isACommand, out=aDest);
+
+    // C command computation
+    Mux16(a=aValue, b=inM, sel=instruction[12], out=aOrMRegisters);
+
+    ALU(
+        x=dValue, 
+        y=aOrMRegisters, 
+        zx=instruction[11], 
+        nx=instruction[10], 
+        zy=instruction[9], 
+        ny=instruction[8], 
+        f=instruction[7],
+        no=instruction[6], 
+        out=dest, out=outM,
+        zr=zeroResult, 
+        ng=negativeRes
+    );
+
+    // C command result dest
+    DMux8Way(
+        in=true, 
+        sel=instruction[3..5], 
+        a=loadNull, 
+        b=loadMx, 
+        c=loadDx, 
+        d=loadDMx, 
+        e=loadAx,
+        f=loadAMx,
+        g=loadADx, 
+        h=loadADMx
+    );
+
+    Or(a=loadMx, b=loadDMx, out=loadM1x);
+    Or(a=loadM1x, b=loadAMx, out=loadM2x);
+    Or(a=loadM2x, b=loadADMx, out=loadM);
+    And(a=loadM, b=isNotACommand, out=writeM);
+
+    Or(a=loadAx, b=loadAMx, out=loadA1x);
+    Or(a=loadA1x, b=loadADx, out=loadA2x);
+    Or(a=loadA2x, b=loadADMx, out=loadA);
+
+    Or(a=loadDx, b=loadDMx, out=loadD1x);
+    Or(a=loadD1x, b=loadADx, out=loadD2x);
+    Or(a=loadD2x, b=loadADMx, out=loadD);
+
+    // C command jump
+
+    Not(in=negativeRes, out=notNegativeResX);
+    Not(in=zeroResult, out=notZeroResX);
+    And(a=notNegativeResX, b=notZeroResX, out=positiveResX);
+    Or(a=notNegativeResX, b=zeroResult, out=positiveOrZeroResX);
+    And(a=negativeRes, b=notZeroResX, out=negativeAndNotZeroResX);
+    Or(a=negativeRes, b=zeroResult, out=negativeOrZeroResX);
+
+    DMux8Way(in=true, 
+        sel=instruction[0..2], 
+        a=notJumpSel, 
+        b=positiveResSel, 
+        c=zeroResSel, 
+        d=positiveOrZeroResSel, 
+        e=negativeAndNotZeroResSel, 
+        f=notZeroResSel, 
+        g=negativeOrZeroResSel, 
+        h=jumpSel
+    );
+
+    And(a=zeroResSel, b=zeroResult, out=zeroRes);
+    And(a=positiveResSel, b=positiveResX, out=positiveRes);
+    And(a=positiveOrZeroResSel, b=positiveOrZeroResX, out=positiveOrZeroRes);
+    And(a=negativeAndNotZeroResSel, b=negativeAndNotZeroResX, out=negativeAndNotZeroRes);
+    And(a=notZeroResSel, b=notZeroResX, out=notZeroRes);
+    And(a=negativeOrZeroResSel, b=negativeOrZeroResX, out=negativeOrZeroRes);
+    And(a=jumpSel, b=true, out=jump);
+
+    Or(a=positiveRes, b=zeroRes, out=js0);
+    Or(a=js0, b=positiveOrZeroRes, out=js3);
+    Or(a=js3, b=negativeAndNotZeroRes, out=js4);
+    Or(a=js4, b=notZeroRes, out=js5);
+    Or(a=js5, b=negativeOrZeroRes, out=js6);
+    Or(a=js6, b=jump, out=js7);
+    Not(in=notJumpSel, out=jmpAllowed);
+    And(a=js7, b=jmpAllowed, out=js8);
+    And(a=js8, b=isNotACommand, out=jmpLoad);
+
+    Not(in=jmpLoad, out=increment);
+    PC(in=aValue, load=jmpLoad, inc=increment, reset=reset, out[0..14]=pc);    
+}
