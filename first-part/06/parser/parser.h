@@ -3,6 +3,8 @@
  */
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 struct CInstruction {
 	char* dest;
@@ -20,7 +22,7 @@ char* advance();
 
 /* That crap is needed to determine current instruction type */
 enum InstructionType {A_INSTRUCTION, C_INSTRUCTION, L_INSTRUCTION};
-enum InstructionType instructionType();
+enum InstructionType instructionType(char* sp);
 
 /* Needed to handle stupid A and L type of instructions, will retrieve sybols from there... */
 char* symbol();
