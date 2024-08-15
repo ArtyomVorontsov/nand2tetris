@@ -7,33 +7,33 @@
 #include <string.h>
 
 struct CInstruction {
-	char* dest;
-	char* comp;
-	char* jump;
+	char *dest;
+	char *comp;
+	char *jump;
 };
 
-struct CInstruction* parser(char* sp);
+struct CInstruction** parser(char *sp);
 
 /* That shit is needed to check if there something left to process */
-bool hasMoreLines();
+bool hasMoreLines(char *sp);
 
 /* That shit is needed to move pointer across the source file */
-char* advance();
+char *advance(char *sp);
 
 /* That crap is needed to determine current instruction type */
 enum InstructionType {A_INSTRUCTION, C_INSTRUCTION, L_INSTRUCTION};
-enum InstructionType instructionType(char* sp);
+char *instructionType(char *sp);
 
 /* Needed to handle stupid A and L type of instructions, will retrieve sybols from there... */
-char* symbol();
+char *symbol();
 
 /* To decompose C instruction we need that shitty dest function, it will retrieve dest part from whole instruction */
-char* dest(char*);
+char *dest(char*);
 
 /* The same for below ones, cmon you are so stupid that cannot just read code? */
-char* comp(char*);
+char *comp(char*);
 
-char* jump(char*);
+char *jump(char*);
 
 
 /* End of that crap */
