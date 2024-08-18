@@ -30,11 +30,13 @@ char *symbol();
 /* To decompose C instruction we need that shitty dest function, it will retrieve dest part from whole instruction */
 char *dest(char*);
 
-/* The same for below ones, cmon you are so stupid that cannot just read code? */
+/* The same for two below ones, cmon you are so stupid that cannot just read code? */
 char *comp(char*);
 
 char *jump(char*);
 
 
+bool isJump(char *sp);
+bool isAssignement(char *sp);
 /* End of that crap */
 

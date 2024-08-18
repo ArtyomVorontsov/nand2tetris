@@ -11,42 +11,57 @@ void RunAllTests(void);
 int main(int argc, char *argv[]){
 	//TEST_FLAG  
 
-	char *program = "A=A+B\nA=A+C\n";
+	char *program = "A=A+B\n0;JMP\nA=C+M";
 		
 	struct CInstruction **parsed = parser(program);
 
-	printf("%s\n", (*parsed)->comp);
+	for(int i = 0; *(parsed + i) != NULL; i++){
+		printf("dest: %s\ncomp: %s\njump: %s\n\n", 
+			(*(parsed + i))->dest, 
+			(*(parsed + i))->comp, 
+			(*(parsed + i))->jump
+		);
+	}
+
 
 	return 0;
 }
 
 
 struct CInstruction** parser(char *sp){
-
 	struct CInstruction** cInstructions = malloc(sizeof(struct CInstruction*) * 1000);
-	while(hasMoreLines(sp)){
+	int i = 0;
+	bool hml = false;
+	while((hml = hasMoreLines(sp))){
 		struct CInstruction* cInst = (struct CInstruction*) malloc(sizeof (struct CInstruction));
 		
 		char *it = instructionType(sp);
 
-		if(strcmp("C_INSTRUCTION", it)){
-			cInst->dest = dest(sp);
-			cInst->comp = comp(sp);
-			cInst->jump = jump(sp);
+		if(strcmp("C_INSTRUCTION", it) == 0){
+			cInst->dest = NULL;
+			cInst->comp = NULL;
+			cInst->jump = NULL;
+
+			if(isAssignement(sp)) cInst->dest = dest(sp);
+			if(isAssignement(sp)) cInst->comp = comp(sp);
+			if(isJump(sp)) cInst->jump = jump(sp);
 
 		} 
-		else if(strcmp("A_INSTRUCTION", it)){
+		else if(strcmp("A_INSTRUCTION", it) == 0){
 
 		}
-		else if(strcmp("L_INSTRUCTION", it)){
+		else if(strcmp("L_INSTRUCTION", it) == 0){
 
 		} 
 		else {
 			exit(1);
 		}
-	
+
+		*(cInstructions + i) = cInst;
+		i++;	
 		sp = advance(sp);
 	}
+	*(cInstructions + i) = NULL;
 	
 	return cInstructions;
 }
@@ -57,7 +72,7 @@ bool hasMoreLines(char *sp){
 }
 
 char *advance(char *sp){
-	while(*sp++ != '\n');
+	while(*sp++ != '\n' && *sp != '\0');
 	return sp;
 }
 
@@ -80,10 +95,10 @@ char *instructionType(char *sp){
 }
 
 char *dest(char* sp){
-	char *destP = (char*) malloc(sizeof(char) * 4);
+	char *destP = (char*) malloc(sizeof(char) * 10);
 
 	int i = 0;
-	while(*sp != '='){
+	while(*sp != '=' && *sp != '\0'){
 		*(destP + i++) = *sp++;
 	}
 	*(destP + i++) = '\0';
@@ -95,8 +110,8 @@ char *comp(char* sp){
 	char *compP = (char*) malloc(sizeof(char) * 10);
 
 	int i = 0;
-	while(*sp++ != '=');
-	while(i < 4){
+	while(*sp++ != '=' && *sp != '\0');
+	while(i < 3){
 		*(compP + i++) = *sp++;
 	}
 	*(compP + i++) = '\0';
@@ -105,7 +120,7 @@ char *comp(char* sp){
 }
 
 char *jump(char* sp){
-	char *jumpP = (char*) malloc(sizeof(char) * 4);
+	char *jumpP = (char*) malloc(sizeof(char) * 10);
 
 	int i = 0, j = 0;
 	bool isJump = false;
@@ -124,6 +139,26 @@ char *jump(char* sp){
 	return jumpP;
 }
 
+bool isJump(char *sp){
+	bool isJ = false;
+	while(*sp != '\0' && *sp != '\n' && isJ == false){
+		isJ = *sp == ';';
+		sp++;
+	}
+
+	return isJ;
+}
+
+bool isAssignement(char *sp){
+	bool isA = false;
+	while(*sp != '\0' && *sp != '\n' && isA == false){
+		isA = *sp == '=';
+		sp++;
+	}
+
+	return isA;
+}
+
 /* Tests */
 
 void destTest(CuTest *tc);
@@ -137,6 +172,10 @@ void instructionTypeTest(CuTest *tc);
 void instructionTypeTest2(CuTest *tc);
 void instructionTypeTest3(CuTest *tc);
 void instructionTypeTest4(CuTest *tc);
+void isJumpTest(CuTest *tc);
+void isJumpTest2(CuTest *tc);
+void isAssignementTest(CuTest *tc);
+void isAssignementTest2(CuTest *tc);
 
 CuSuite *parser_exercise1_chapter6_getSuite(void){
 	CuSuite *suite = CuSuiteNew();
@@ -152,6 +191,10 @@ CuSuite *parser_exercise1_chapter6_getSuite(void){
 	SUITE_ADD_TEST(suite, instructionTypeTest2);
 	SUITE_ADD_TEST(suite, instructionTypeTest3);
 	SUITE_ADD_TEST(suite, instructionTypeTest4);
+	SUITE_ADD_TEST(suite, isJumpTest);
+	SUITE_ADD_TEST(suite, isJumpTest2);
+	SUITE_ADD_TEST(suite, isAssignementTest);
+	SUITE_ADD_TEST(suite, isAssignementTest2);
 
 	return suite;
 }
@@ -241,3 +284,36 @@ void jumpTest2(CuTest *tc){
 	char *actual = jump(instruction);
 	CuAssertStrEquals(tc, expected, actual);
 }
+
+void isJumpTest(CuTest *tc){
+	char *instruction = "0;JNE";
+
+	bool expected = true;
+	bool actual = isJump(instruction);
+	CuAssertIntEquals(tc, expected, actual);
+}
+
+void isJumpTest2(CuTest *tc){
+	char *instruction = "A=A+B";
+
+	bool expected = false;
+	bool actual = isJump(instruction);
+	CuAssertIntEquals(tc, expected, actual);
+}
+
+void isAssignementTest(CuTest *tc){
+	char *instruction = "A=A+B";
+
+	bool expected = true;
+	bool actual = isAssignement(instruction);
+	CuAssertIntEquals(tc, expected, actual);
+}
+
+void isAssignementTest2(CuTest *tc){
+	char *instruction = "0;JNE";
+
+	bool expected = false;
+	bool actual = isAssignement(instruction);
+	CuAssertIntEquals(tc, expected, actual);
+}
+
