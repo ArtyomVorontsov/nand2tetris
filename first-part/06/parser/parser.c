@@ -8,26 +8,6 @@
 #include "../../../lib/cutest-1.5/CuTest.h"
 void RunAllTests(void);
 
-int main(int argc, char *argv[]){
-	//TEST_FLAG  
-
-	char *program = "A=A+B\n0;JMP\nA=C+M";
-		
-	struct CInstruction **parsed = parser(program);
-
-	for(int i = 0; *(parsed + i) != NULL; i++){
-		printf("dest: %s\ncomp: %s\njump: %s\n\n", 
-			(*(parsed + i))->dest, 
-			(*(parsed + i))->comp, 
-			(*(parsed + i))->jump
-		);
-	}
-
-
-	return 0;
-}
-
-
 struct CInstruction** parser(char *sp){
 	struct CInstruction** cInstructions = malloc(sizeof(struct CInstruction*) * 1000);
 	int i = 0;
@@ -68,7 +48,7 @@ struct CInstruction** parser(char *sp){
 
 
 bool hasMoreLines(char *sp){
-	return *sp != '\0';
+	return *sp != '\0' && *sp != '\n';
 }
 
 char *advance(char *sp){
@@ -134,7 +114,7 @@ char *jump(char* sp){
 		}
 
 	}
-	*(jumpP + j++) = '\0';
+	*(jumpP + 3) = '\0';
 
 	return jumpP;
 }
