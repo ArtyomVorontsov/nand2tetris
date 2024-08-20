@@ -8,7 +8,7 @@ ${OUTPUT_FILE}:${FILE}
 	touch buffer.c
 	cat ${FILE} > buffer.c
 	sed -i 's/${TEST_FLAG}/${TEST_FLAG_DATA}/' buffer.c
-	gcc -g -std=c99 -o ${OUTPUT_FILE} ./parser/parser.h ./parser/parser.c ../../AllTests.c ../../lib/cutest-1.5/CuTest.c buffer.c
+	gcc -g -std=c99 -o ${OUTPUT_FILE} ./code/code.h ./code/code.c ./parser/parser.h ./parser/parser.c ../../AllTests.c ../../lib/cutest-1.5/CuTest.c buffer.c
 	rm -f buffer.c
 
 clean:

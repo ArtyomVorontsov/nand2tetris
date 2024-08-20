@@ -1,9 +1,8 @@
-#include "./parser/parser.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "assembler.h"
 
 /* 
- * TODO: improve memory handling
+ * TODO: 
+ * improve memory handling
  * move read file logic to separate function 
  * write code generator
  * extend assembler with A and L type of commands as well as symbol table
@@ -43,6 +42,8 @@ int main(int argc, char **argv){
 			(*(parsed + i))->jump
 		);
 	}
+
+	code(parsed);
 
 	return 0;
 }

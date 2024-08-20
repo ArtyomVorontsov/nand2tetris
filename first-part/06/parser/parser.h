@@ -1,16 +1,7 @@
 /* That is header file for parser.c, I also don't care about where that will be used
  * anyway that is garbage for my own education
  */
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-struct CInstruction {
-	char *dest;
-	char *comp;
-	char *jump;
-};
+#include "../assembler.h"
 
 struct CInstruction** parser(char *sp);
 
