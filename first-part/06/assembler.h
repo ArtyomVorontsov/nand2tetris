@@ -12,3 +12,6 @@ struct CInstruction {
 
 char **code(struct CInstruction **instructions);
 struct CInstruction** parser(char *sp);
+char * getProgramText(char *sourceCodeFilename);
+void writeTextToFile(char *fileName, char **generatedCode);
+char *getFileNameWithoutExtension(char *filename);
