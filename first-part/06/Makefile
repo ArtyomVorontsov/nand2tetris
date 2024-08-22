@@ -5,6 +5,7 @@ TEST_FLAG = \/\/TEST_FLAG
 
 
 ${OUTPUT_FILE}:${FILE}
+	rm -f a.hack 
 	touch buffer.c
 	cat ${FILE} > buffer.c
 	sed -i 's/${TEST_FLAG}/${TEST_FLAG_DATA}/' buffer.c

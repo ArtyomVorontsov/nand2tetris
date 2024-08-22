@@ -10,5 +10,5 @@ struct CInstruction {
 	char *jump;
 };
 
-char *code(struct CInstruction **instructions);
+char **code(struct CInstruction **instructions);
 struct CInstruction** parser(char *sp);

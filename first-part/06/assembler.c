@@ -6,6 +6,7 @@
  * move read file logic to separate function 
  * write code generator
  * extend assembler with A and L type of commands as well as symbol table
+ * generate file with the same name as input file, but with different .hack extension
  */
 
 int main(int argc, char **argv){
@@ -43,7 +44,20 @@ int main(int argc, char **argv){
 		);
 	}
 
-	code(parsed);
+	char ** generatedCode = code(parsed);
+
+
+	// Open a file in writing mode
+	FILE* fptr = fopen("a.hack", "a");
+
+
+	// Write some text to the file
+	int i = 0;
+	while(*(generatedCode + i) != NULL){
+		fprintf(fptr, "%s", *(generatedCode + i));
+		i++;
+	}
+
 
 	return 0;
 }

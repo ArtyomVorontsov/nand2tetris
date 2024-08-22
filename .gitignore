@@ -1,3 +1,5 @@
 *.swp
 *.out
 text.asm
+text.hack
+a.hack

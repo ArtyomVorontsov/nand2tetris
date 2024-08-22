@@ -1,13 +1,13 @@
 #include "./code.h"
 
-char *code(struct CInstruction **instructions){
-	char *generatedCode[1000];
+char **code(struct CInstruction **instructions){
+	char **generatedCode = (char **) malloc(sizeof(char *) * 1000);
 
 	int i = 0;
 
 	struct CInstruction *inst;
 	while((inst = *(instructions + i)) != NULL){
-		char binary[17];
+		char * binary = malloc(sizeof(char) * 17);
 
 		if(inst->dest || inst->comp || inst->jump){
 
@@ -78,13 +78,14 @@ char *code(struct CInstruction **instructions){
 			}
 
 		}
-		binary[16] = '\0';
-		printf("%s\n", binary);
+		binary[16] = '\n';
+		generatedCode[i] = binary;
 		i++;
 
 	}
+	generatedCode[i] = NULL;
 
-	return "";
+	return generatedCode;
 	
 }
 
