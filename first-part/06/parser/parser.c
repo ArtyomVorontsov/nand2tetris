@@ -91,7 +91,7 @@ char *comp(char* sp){
 
 	int i = 0;
 	while(*sp++ != '=' && *sp != '\0');
-	while(i < 3){
+	while(*sp != '\n'){
 		*(compP + i++) = *sp++;
 	}
 	*(compP + i++) = '\0';

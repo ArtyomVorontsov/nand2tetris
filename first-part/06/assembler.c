@@ -3,10 +3,8 @@
 /* 
  * TODO: 
  * improve memory handling
- * move read file logic to separate function 
  * write code generator
  * extend assembler with A and L type of commands as well as symbol table
- * generate file with the same name as input file, but with different .hack extension
  */
 
 
