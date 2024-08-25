@@ -3,8 +3,8 @@
 /* 
  * TODO: 
  * improve memory handling
- * write code generator
- * extend assembler with A and L type of commands as well as symbol table
+ * extend assembler with L type of commands
+ * extend assembler with C commands which use M register
  */
 
 
@@ -20,10 +20,12 @@ int main(int argc, char **argv){
 
 	// Print parsed structures
 	for(int i = 0; *(parsed + i) != NULL; i++){
-		printf("dest: %s\ncomp: %s\njump: %s\n\n", 
+		printf("dest: %s\ncomp: %s\njump: %s\naddress: %s\nsymbol: %s\n\n", 
 			(*(parsed + i))->dest, 
 			(*(parsed + i))->comp, 
-			(*(parsed + i))->jump
+			(*(parsed + i))->jump,
+			(*(parsed + i))->address,
+			(*(parsed + i))->symbol
 		);
 	}
 
@@ -93,8 +95,13 @@ void writeTextToFile(char *fileName, char **generatedCode){
 		i++;
 
 	}
-	// Open a file in writing mode
-	FILE* fptr = fopen(fileName, "a");
+	// Open a file in writing mode, clear file
+	FILE* fptr = fopen(fileName, "w");
+	fprintf(fptr, "%s", "\0");
+	fclose(fptr);	
+
+	// Open a file in append mode
+	fptr = fopen(fileName, "a");
 
 	// Write some text to the file
 	i = 0;
@@ -103,5 +110,7 @@ void writeTextToFile(char *fileName, char **generatedCode){
 		fprintf(fptr, "%s", gc);
 		i++;
 	}
+
+	fclose(fptr);	
 }
 

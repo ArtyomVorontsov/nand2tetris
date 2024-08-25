@@ -25,10 +25,10 @@ struct CInstruction** parser(char *sp){
 			if(isAssignement(sp)) cInst->dest = dest(sp);
 			if(isAssignement(sp)) cInst->comp = comp(sp);
 			if(isJump(sp)) cInst->jump = jump(sp);
-
 		} 
 		else if(strcmp("A_INSTRUCTION", it) == 0){
-
+			if(isSymbol(sp)) cInst->symbol = symbolC(sp);
+			if(isAddress(sp)) cInst->address = address(sp);
 		}
 		else if(strcmp("L_INSTRUCTION", it) == 0){
 
@@ -73,6 +73,9 @@ char *instructionType(char *sp){
 	}
 	return "NOT_DETERMINED";
 }
+
+/* C command */
+
 
 char *dest(char* sp){
 	char *destP = (char*) malloc(sizeof(char) * 10);
@@ -136,6 +139,61 @@ bool isAssignement(char *sp){
 		sp++;
 	}
 
+	return isA;
+}
+
+/* A command */
+char *address(char *sp){
+	char *addressP = (char*) malloc(sizeof(char) * 10);
+	int i = 0, j = 0;
+	while(*(sp + i) != '\n' && *(sp + i) != '\0'){
+		if(*(sp + i) != '@'){
+			*(addressP + j) = *(sp + i);
+			j++;
+		}
+		i++;
+	}
+
+	*(addressP + j) = '\0';
+
+	return addressP;
+}
+
+char *symbolC(char *sp){
+	char *symbolP = (char*) malloc(sizeof(char) * 10);
+	int i = 0, j = 0;
+	while(*(sp + i) != '\n' && *(sp + i) != '\0'){
+		if(*(sp + i) != '@'){
+			*(symbolP + j) = *(sp + i);
+			j++;
+		}
+		i++;
+	}
+
+	*(symbolP + j) = '\0';
+
+	return symbolP;
+}
+
+bool isSymbol(char *sp){
+	sp++; // Skip @ char
+	char isS = false;
+	while(*sp != '\0' && *sp != '\n' && isS == false){
+		isS = (*sp >= 'a' && *sp <= 'z') ||
+			(*sp >= 'A' && *sp <= 'Z');
+
+		sp++;
+	}
+	return isS;
+}
+
+bool isAddress(char *sp){
+	sp++; // Skip @ char
+	char isA = false;
+	while(*sp != '\0' && *sp != '\n' && isA == false){
+		isA = (*sp >= '0' && *sp <= '9');
+		sp++;
+	}
 	return isA;
 }
 

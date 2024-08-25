@@ -4,7 +4,7 @@ TEST_FLAG_DATA := if(argc > 1){ if(strcmp(argv[1], "--test") == 0){ RunAllTests(
 TEST_FLAG = \/\/TEST_FLAG
 
 
-${OUTPUT_FILE}:${FILE}
+assembler.out:assembler.c ./parser/parser.c  ./code/code.c
 	touch buffer.c
 	cat ${FILE} > buffer.c
 	sed -i 's/${TEST_FLAG}/${TEST_FLAG_DATA}/' buffer.c

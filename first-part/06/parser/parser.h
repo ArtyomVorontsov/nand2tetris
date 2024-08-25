@@ -26,8 +26,11 @@ char *comp(char*);
 
 char *jump(char*);
 
-
+char *symbolC(char *sp);
+char *address(char *sp);
 bool isJump(char *sp);
 bool isAssignement(char *sp);
+bool isSymbol(char *sp);
+bool isAddress(char *sp);
 /* End of that crap */
 
