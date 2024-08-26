@@ -31,6 +31,7 @@ struct CInstruction** parser(char *sp){
 			if(isAddress(sp)) cInst->address = address(sp);
 		}
 		else if(strcmp("L_INSTRUCTION", it) == 0){
+			if(isLabel(sp)) cInst->label = label(sp);
 
 		} 
 		else {
@@ -195,6 +196,28 @@ bool isAddress(char *sp){
 		sp++;
 	}
 	return isA;
+}
+
+/* L command */
+bool isLabel(char *sp){
+	char isL = *sp == '(';
+	return isL;
+}
+
+char *label(char *sp){
+	char *labelP = (char*) malloc(sizeof(char) * 10);
+	int i = 0, j = 0;
+	while(*(sp + i) != '\n' && *(sp + i) != ')'){
+		if(*(sp + i) != '('){
+			*(labelP + j) = *(sp + i);
+			j++;
+		}
+		i++;
+	}
+
+	*(labelP + j) = '\0';
+
+	return labelP;
 }
 
 /* Tests */

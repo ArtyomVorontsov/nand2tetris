@@ -7,10 +7,16 @@ char **code(struct CInstruction **instructions){
 	struct SymbolRecord **symbolTable = malloc(sizeof(struct SymbolRecord*) * 100);
 	*symbolTable = NULL;
 
+	int lastSymbolValue = 16;
+
 	
 	while((inst = *(instructions + i)) != NULL){
 		if(inst->symbol && (findSymbol(symbolTable, inst->symbol) == NULL)){
-			addSymbol(symbolTable, inst->symbol);
+			addSymbol(symbolTable, inst->symbol, lastSymbolValue++);
+		}
+
+		if(inst->label && (findSymbol(symbolTable, inst->label) == NULL)){
+			addSymbol(symbolTable, inst->label, i);
 		}
 
 		i++;
@@ -409,26 +415,17 @@ struct SymbolRecord *findSymbol(struct SymbolRecord **symbolTableP, char *symbol
 	return *symbolTableP;
 }
 
-void addSymbol(struct SymbolRecord **symbolTableP, char *symbol){
+void addSymbol(struct SymbolRecord **symbolTableP, char *label, int value){
 	int i = 0;
-	struct SymbolRecord *lastRecord = NULL;
 	struct SymbolRecord *newRecord = malloc(sizeof(struct SymbolRecord));
-	while((*(symbolTableP + i) != NULL) && (i < 99)){
-		lastRecord = *(symbolTableP + i);
-		i++;
-	}
+	while((*(symbolTableP + i) != NULL) && (i < 99)) i++;
 
-	if(lastRecord){
-		newRecord->symbol = symbol;
-		newRecord->value = lastRecord->value + 1;
-	} else {
-		newRecord->symbol = symbol;
-		newRecord->value = 16;
-	}
+	newRecord->symbol = label;
+	newRecord->value = value;
+
 	*(symbolTableP + i) = newRecord;
 	*(symbolTableP + i + 1) = NULL;
 }
-
 
 
 

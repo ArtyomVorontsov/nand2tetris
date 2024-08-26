@@ -3,7 +3,6 @@
 /* 
  * TODO: 
  * improve memory handling
- * extend assembler with L type of commands
  * extend assembler with C commands which use M register
  */
 
@@ -20,12 +19,13 @@ int main(int argc, char **argv){
 
 	// Print parsed structures
 	for(int i = 0; *(parsed + i) != NULL; i++){
-		printf("dest: %s\ncomp: %s\njump: %s\naddress: %s\nsymbol: %s\n\n", 
+		printf("dest: %s\ncomp: %s\njump: %s\naddress: %s\nsymbol: %s\nlabel: %s\n\n", 
 			(*(parsed + i))->dest, 
 			(*(parsed + i))->comp, 
 			(*(parsed + i))->jump,
 			(*(parsed + i))->address,
-			(*(parsed + i))->symbol
+			(*(parsed + i))->symbol,
+			(*(parsed + i))->label
 		);
 	}
 

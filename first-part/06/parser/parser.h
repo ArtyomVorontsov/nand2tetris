@@ -23,14 +23,15 @@ char *dest(char*);
 
 /* The same for two below ones, cmon you are so stupid that cannot just read code? */
 char *comp(char*);
-
 char *jump(char*);
-
 char *symbolC(char *sp);
 char *address(char *sp);
+char *label(char *sp);
+
 bool isJump(char *sp);
 bool isAssignement(char *sp);
 bool isSymbol(char *sp);
 bool isAddress(char *sp);
+bool isLabel(char *sp);
 /* End of that crap */
 

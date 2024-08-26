@@ -10,6 +10,7 @@ struct CInstruction {
 	char *jump;
 	char *address;
 	char *symbol;
+	char *label;
 };
 
 
