@@ -34,8 +34,8 @@ struct CInstruction** parser(char *sp){
 			if(isLabel(sp)) cInst->label = label(sp);
 
 		} 
-		else {
-			exit(1);
+		else if(strcmp("NOT_DETERMINED", it) == 0){
+			printf("Skip space or empty line\n");
 		}
 
 		*(cInstructions + i) = cInst;
@@ -49,7 +49,7 @@ struct CInstruction** parser(char *sp){
 
 
 bool hasMoreLines(char *sp){
-	return *sp != '\0' && *sp != '\n';
+	return *sp != '\0';
 }
 
 char *advance(char *sp){

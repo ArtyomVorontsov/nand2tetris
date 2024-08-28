@@ -3,6 +3,7 @@
 /* 
  * TODO: 
  * improve memory handling
+ * handle comments
  */
 
 
