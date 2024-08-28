@@ -15,6 +15,7 @@ int main(int argc, char **argv){
 	program = getProgramText(sourceCodeFilename);
 	
 	parsed = parser(program);
+	printf("Parsed.\n");
 
 	// Print parsed structures
 	for(int i = 0; *(parsed + i) != NULL; i++){
@@ -53,7 +54,7 @@ char *getFileNameWithoutExtension(char *filename){
 
 char * getProgramText(char *sourceCodeFilename){
 	FILE *fp;
-	char *program = malloc(sizeof(char) * 1000);
+	char *program = malloc(sizeof(char) * 100000);
 	char line[100];
 
 	// Get text from file

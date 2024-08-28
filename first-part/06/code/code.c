@@ -436,10 +436,9 @@ char **code(struct CInstruction **instructions){
 
 		}
 		else if (inst->address || inst->symbol){
-			binary[0] = '1';
+			binary[0] = '0';
 
 			if(inst->address){
-
 				char *binString = intStrToBinStr(inst->address);
 
 				binary[1] = *(binString + 14);

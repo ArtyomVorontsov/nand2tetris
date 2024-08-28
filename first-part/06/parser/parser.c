@@ -9,7 +9,7 @@
 void RunAllTests(void);
 
 struct CInstruction** parser(char *sp){
-	struct CInstruction** cInstructions = malloc(sizeof(struct CInstruction*) * 1000);
+	struct CInstruction** cInstructions = malloc(sizeof(struct CInstruction*) * 10000);
 	int i = 0;
 	bool hml = false;
 	while((hml = hasMoreLines(sp))){
@@ -87,7 +87,7 @@ char *instructionType(char *sp){
 
 
 char *dest(char* sp){
-	char *destP = (char*) malloc(sizeof(char) * 10);
+	char *destP = (char*) malloc(sizeof(char) * 100);
 
 	int i = 0;
 	while(*sp != '=' && *sp != '\0'){
@@ -99,7 +99,7 @@ char *dest(char* sp){
 };
 
 char *comp(char* sp){
-	char *compP = (char*) malloc(sizeof(char) * 10);
+	char *compP = (char*) malloc(sizeof(char) * 100);
 
 	int i = 0;
 	while(*sp++ != '=' && *sp != '\0');
@@ -112,7 +112,7 @@ char *comp(char* sp){
 }
 
 char *jump(char* sp){
-	char *jumpP = (char*) malloc(sizeof(char) * 10);
+	char *jumpP = (char*) malloc(sizeof(char) * 100);
 
 	int i = 0, j = 0;
 	bool isJump = false;
@@ -153,7 +153,7 @@ bool isAssignement(char *sp){
 
 /* A command */
 char *address(char *sp){
-	char *addressP = (char*) malloc(sizeof(char) * 10);
+	char *addressP = (char*) malloc(sizeof(char) * 100);
 	int i = 0, j = 0;
 	while(*(sp + i) != '\n' && *(sp + i) != '\0'){
 		if(*(sp + i) != '@'){
@@ -169,7 +169,7 @@ char *address(char *sp){
 }
 
 char *symbolC(char *sp){
-	char *symbolP = (char*) malloc(sizeof(char) * 10);
+	char *symbolP = (char*) malloc(sizeof(char) * 100);
 	int i = 0, j = 0;
 	while(*(sp + i) != '\n' && *(sp + i) != '\0'){
 		if(*(sp + i) != '@'){
@@ -213,7 +213,7 @@ bool isLabel(char *sp){
 }
 
 char *label(char *sp){
-	char *labelP = (char*) malloc(sizeof(char) * 10);
+	char *labelP = (char*) malloc(sizeof(char) * 100);
 	int i = 0, j = 0;
 	while(*(sp + i) != '\n' && *(sp + i) != ')'){
 		if(*(sp + i) != '('){
