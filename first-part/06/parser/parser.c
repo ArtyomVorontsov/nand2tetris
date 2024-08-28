@@ -34,9 +34,13 @@ struct CInstruction** parser(char *sp){
 			if(isLabel(sp)) cInst->label = label(sp);
 
 		} 
-		else if(strcmp("NOT_DETERMINED", it) == 0){
-			printf("Skip space or empty line\n");
+		else if(strcmp("COMMENT", it) == 0){
+			printf("Skip comment.\n");
 		}
+		else if(strcmp("NOT_DETERMINED", it) == 0){
+			printf("Skip space or empty line.\n");
+		}
+
 
 		*(cInstructions + i) = cInst;
 		i++;	
@@ -69,6 +73,10 @@ char *instructionType(char *sp){
 
 		if(*sp == '('){
 			return "L_INSTRUCTION";
+		}
+
+		if(*sp == '/' && *(sp + 1) == '/'){
+			return "COMMENT";
 		}
 		sp++;
 	}
