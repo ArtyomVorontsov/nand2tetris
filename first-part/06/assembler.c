@@ -3,7 +3,6 @@
 /* 
  * TODO: 
  * improve memory handling
- * extend assembler with C commands which use M register
  */
 
 
