@@ -17,7 +17,56 @@ char **code(struct CInstruction **instructions){
 			}
 			else if(strcmp(inst->symbol, "KEYBOARD") == 0){
 				addSymbol(symbolTable, inst->symbol, 24576);
-			} else {
+			}
+			else if(strcmp(inst->symbol, "R0") == 0){
+				addSymbol(symbolTable, inst->symbol, 0);
+			} 
+			else if(strcmp(inst->symbol, "R1") == 0){
+				addSymbol(symbolTable, inst->symbol, 1);
+			} 
+			else if(strcmp(inst->symbol, "R2") == 0){
+				addSymbol(symbolTable, inst->symbol, 2);
+			} 
+			else if(strcmp(inst->symbol, "R3") == 0){
+				addSymbol(symbolTable, inst->symbol, 3);
+			} 
+			else if(strcmp(inst->symbol, "R4") == 0){
+				addSymbol(symbolTable, inst->symbol, 4);
+			} 
+			else if(strcmp(inst->symbol, "R5") == 0){
+				addSymbol(symbolTable, inst->symbol, 5);
+			} 
+			else if(strcmp(inst->symbol, "R6") == 0){
+				addSymbol(symbolTable, inst->symbol, 6);
+			} 
+			else if(strcmp(inst->symbol, "R7") == 0){
+				addSymbol(symbolTable, inst->symbol, 7);
+			} 
+			else if(strcmp(inst->symbol, "R8") == 0){
+				addSymbol(symbolTable, inst->symbol, 8);
+			} 
+			else if(strcmp(inst->symbol, "R9") == 0){
+				addSymbol(symbolTable, inst->symbol, 9);
+			} 
+			else if(strcmp(inst->symbol, "R10") == 0){
+				addSymbol(symbolTable, inst->symbol, 10);
+			} 
+			else if(strcmp(inst->symbol, "R11") == 0){
+				addSymbol(symbolTable, inst->symbol, 11);
+			} 
+			else if(strcmp(inst->symbol, "R12") == 0){
+				addSymbol(symbolTable, inst->symbol, 12);
+			} 
+			else if(strcmp(inst->symbol, "R13") == 0){
+				addSymbol(symbolTable, inst->symbol, 13);
+			} 
+			else if(strcmp(inst->symbol, "R14") == 0){
+				addSymbol(symbolTable, inst->symbol, 14);
+			} 
+			else if(strcmp(inst->symbol, "R15") == 0){
+				addSymbol(symbolTable, inst->symbol, 15);
+			} 
+			else {
 				addSymbol(symbolTable, inst->symbol, lastSymbolValue++);
 			}
 		} else if(inst->label){
@@ -466,8 +515,6 @@ char **code(struct CInstruction **instructions){
 				binary[13] = *(binString + 2);
 				binary[14] = *(binString + 1);
 				binary[15] = *(binString + 0);
-
-
 			}
 			else if(inst->symbol){
 				struct SymbolRecord *symbolRecord = findSymbol(symbolTable, inst->symbol);

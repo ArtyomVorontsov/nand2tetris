@@ -109,7 +109,7 @@ char *comp(char* sp){
 
 	int i = 0;
 	while(*sp++ != '=' && *sp != '\0');
-	while(*sp != '\n' && *sp != ' '){
+	while(*sp != '\n' && *sp != ' ' && *sp != '\t'){
 		*(compP + i++) = *sp++;
 	}
 	*(compP + i++) = '\0';
@@ -203,25 +203,28 @@ char *symbolC(char *sp){
 }
 
 bool isSymbol(char *sp){
-	sp++; // Skip @ char
-	char isS = false;
-	while(*sp != '\0' && *sp != '\n' && isS == false){
+	bool isAt = *(sp++) == '@';
+	bool firstCharNotNumber = *(sp++) >= 'A';
+	bool isS = true;
+	while(*sp != '\0' && *sp != '\n' && *sp != ' ' && *sp != '\t' && isS == true){
 		isS = (*sp >= 'a' && *sp <= 'z') ||
-			(*sp >= 'A' && *sp <= 'Z');
+			(*sp >= 'A' && *sp <= 'Z') || 
+			(*sp >= '0' && *sp <= '9') ||
+			(*sp == '_');
 
 		sp++;
 	}
-	return isS;
+	return isS && isAt && firstCharNotNumber;
 }
 
 bool isAddress(char *sp){
-	sp++; // Skip @ char
-	char isA = false;
-	while(*sp != '\0' && *sp != '\n' && isA == false){
+	bool isAt = *(sp++) == '@';
+	bool isA = true;
+	while(*sp != '\0' && *sp != '\n' && *sp != ' ' && *sp != '\t' && isA == true){
 		isA = (*sp >= '0' && *sp <= '9');
 		sp++;
 	}
-	return isA;
+	return isA && isAt;
 }
 
 /* L command */
