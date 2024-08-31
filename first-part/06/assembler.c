@@ -35,12 +35,14 @@ int main(int argc, char **argv){
 
 	writeTextToFile(fileNameWithoutExtension, generatedCode);
 
+	free(fileNameWithoutExtension);
+
 	return 0;
 }
 
 char *getFileNameWithoutExtension(char *filename){
 	int i = 0;
-	char *filenameWithoutExtension = malloc(sizeof(char) * 1000);
+	char *filenameWithoutExtension = malloc(sizeof(char) * strlen(filename));
 	while(*(filename + i) != '.' && *(filename + i) != '\0'){
 		*(filenameWithoutExtension + i) = *(filename + i);
 
@@ -53,8 +55,11 @@ char *getFileNameWithoutExtension(char *filename){
 }
 
 char * getProgramText(char *sourceCodeFilename){
+	const int MAX_LINE_SIZE = 1000;
+	const int PROGRAM_SIZE_PAGE = 100;
+	int programSize = PROGRAM_SIZE_PAGE;
 	FILE *fp;
-	char *program = malloc(sizeof(char) * 100000);
+	char *program = malloc(sizeof(char) * programSize);
 	char line[100];
 
 	// Get text from file
@@ -64,11 +69,18 @@ char * getProgramText(char *sourceCodeFilename){
 	}
 	
        	int j = 0;	
-	while (fgets(line, 100, fp) != NULL) {
+	while (fgets(line, MAX_LINE_SIZE, fp) != NULL) {
 		int i = 0;
+
 		do {
 			*(program + j) = *(line + i);
 			j++; i++;
+			
+			if(programSize < j){
+				// yep, here we assume that data will be preserved after reallocation
+				// not super robust way, but for learning project it's ok.
+				program = realloc(program, programSize = programSize + PROGRAM_SIZE_PAGE);
+			}
 		} while(*(line + i - 1) != '\n');
 	}
 

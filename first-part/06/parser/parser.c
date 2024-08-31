@@ -9,10 +9,18 @@
 void RunAllTests(void);
 
 struct CInstruction** parser(char *sp){
-	struct CInstruction** cInstructions = malloc(sizeof(struct CInstruction*) * 10000);
+	const int PAGE_SIZE = 10;
+	int cInstructionsSize = PAGE_SIZE;
+	struct CInstruction** cInstructions = malloc(sizeof(struct CInstruction*) * cInstructionsSize);
 	int i = 0;
 	bool hml = false;
 	while((hml = hasMoreLines(sp))){
+		if(i > cInstructionsSize){
+			// yep, here we assume that data will be preserved after reallocation
+			// not super robust way, but for learning project it's ok.
+			cInstructions = realloc(cInstructions, sizeof(struct CInstruction*) * (cInstructionsSize = cInstructionsSize + PAGE_SIZE));
+		}
+
 		struct CInstruction* cInst = (struct CInstruction*) malloc(sizeof (struct CInstruction));
 		
 		char *it = instructionType(sp);
@@ -93,7 +101,7 @@ char *instructionType(char *sp){
 
 
 char *dest(char* sp){
-	char *destP = (char*) malloc(sizeof(char) * 100);
+	char *destP = (char*) malloc(sizeof(char) * 10);
 
 	int i = 0;
 	while(*sp != '=' && *sp != '\0'){
@@ -105,7 +113,7 @@ char *dest(char* sp){
 };
 
 char *comp(char* sp){
-	char *compP = (char*) malloc(sizeof(char) * 100);
+	char *compP = (char*) malloc(sizeof(char) * 10);
 
 	int i = 0;
 	while(*sp++ != '=' && *sp != '\0');
@@ -118,7 +126,7 @@ char *comp(char* sp){
 }
 
 char *jumpComp(char* sp){
-	char *jumpP = (char*) malloc(sizeof(char) * 100);
+	char *jumpP = (char*) malloc(sizeof(char) * 10);
 
 	int i = 0;
 	while(*sp != '\0' && *sp != ';'){
@@ -130,7 +138,7 @@ char *jumpComp(char* sp){
 }
 
 char *jump(char* sp){
-	char *jumpP = (char*) malloc(sizeof(char) * 100);
+	char *jumpP = (char*) malloc(sizeof(char) * 10);
 
 	int i = 0, j = 0;
 	bool isJump = false;
@@ -171,7 +179,7 @@ bool isAssignement(char *sp){
 
 /* A command */
 char *address(char *sp){
-	char *addressP = (char*) malloc(sizeof(char) * 100);
+	char *addressP = (char*) malloc(sizeof(char) * 10);
 	int i = 0, j = 0;
 	while(*(sp + i) != '\n' && *(sp + i) != '\0' && *(sp + i) != ' '){
 		if(*(sp + i) != '@'){
