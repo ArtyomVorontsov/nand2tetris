@@ -2,7 +2,7 @@
 
 char **code(struct CInstruction **instructions){
 	char **generatedCode = (char **) malloc(sizeof(char *) * 1000);
-	int i = 0;
+	int i = 0, line = 0;
 	struct CInstruction *inst;
 	struct SymbolRecord **symbolTable = malloc(sizeof(struct SymbolRecord*) * 100);
 	*symbolTable = NULL;
@@ -12,11 +12,21 @@ char **code(struct CInstruction **instructions){
 	
 	while((inst = *(instructions + i)) != NULL){
 		if(inst->symbol && (findSymbol(symbolTable, inst->symbol) == NULL)){
-			addSymbol(symbolTable, inst->symbol, lastSymbolValue++);
+			if(strcmp(inst->symbol, "SCREEN") == 0){
+				addSymbol(symbolTable, inst->symbol, 16384);
+			}
+			else if(strcmp(inst->symbol, "KEYBOARD") == 0){
+				addSymbol(symbolTable, inst->symbol, 24576);
+			} else {
+				addSymbol(symbolTable, inst->symbol, lastSymbolValue++);
+			}
+		} else if(inst->label){
+			addSymbol(symbolTable, inst->label, line);
 		}
 
-		if(inst->label && (findSymbol(symbolTable, inst->label) == NULL)){
-			addSymbol(symbolTable, inst->label, i);
+
+		if(inst->label == NULL){
+			line++;
 		}
 
 		i++;
@@ -499,26 +509,31 @@ char **code(struct CInstruction **instructions){
 
 char *intStrToBinStr(char *s){
 	int address = atoi(s);
-	int binAddress = intToBin(address);
-	char binStrAddress[100];
-	char *binStrAddressReversed = malloc(sizeof(char) * 100);
-	for(int i = strlen(binStrAddressReversed); i < 100; i++)
-		binStrAddressReversed[i] = '0';
-	sprintf(binStrAddress, "%d", binAddress);
+	char *binStrAddress = int2bin(address, 16);
+	
 
-	int j = 0;
-	for(int i = strlen(binStrAddress) - 1; i >= 0; i--, j++)
-		binStrAddressReversed[j] = binStrAddress[i];
-
-	binStrAddressReversed[99] = '\0';
-
-	return binStrAddressReversed;
+	return binStrAddress;
 }
 
-int intToBin(int k) {
-    if (k == 0) return 0;
-    if (k == 1) return 1;                       /* optional */
-    return (k % 2) + 10 * intToBin(k / 2);
+
+char* int2bin(unsigned integer, int n)
+{
+  char* binary = (char*)malloc(n+1);
+  for (int i=0;i<n;i++)   
+    binary[i] = (integer & (int)1<<(n-i-1)) ? '1' : '0';
+  binary[n]='\0';
+
+  char reversed[n];
+
+  for(int i = 0; i < n - 1; i++)
+	  reversed[i] = binary[n - i - 1];
+
+  reversed[n] = '\0';
+
+  for(int i = 0; i < n; i++)
+	  binary[i] = reversed[i];
+
+  return binary;
 }
 
 
@@ -535,15 +550,22 @@ struct SymbolRecord *findSymbol(struct SymbolRecord **symbolTableP, char *symbol
 }
 
 void addSymbol(struct SymbolRecord **symbolTableP, char *label, int value){
-	int i = 0;
-	struct SymbolRecord *newRecord = malloc(sizeof(struct SymbolRecord));
-	while((*(symbolTableP + i) != NULL) && (i < 99)) i++;
+	
+	struct SymbolRecord *record = findSymbol(symbolTableP, label);
 
-	newRecord->symbol = label;
-	newRecord->value = value;
+	if(record == NULL){
+		int i = 0;
+		struct SymbolRecord *newRecord = malloc(sizeof(struct SymbolRecord));
+		while((*(symbolTableP + i) != NULL) && (i < 99)) i++;
 
-	*(symbolTableP + i) = newRecord;
-	*(symbolTableP + i + 1) = NULL;
+		newRecord->symbol = label;
+		newRecord->value = value;
+
+		*(symbolTableP + i) = newRecord;
+		*(symbolTableP + i + 1) = NULL;
+	} else {
+		record->value = value;
+	}
 }
 
 

@@ -24,15 +24,23 @@ struct CInstruction** parser(char *sp){
 
 			if(isAssignement(sp)) cInst->dest = dest(sp);
 			if(isAssignement(sp)) cInst->comp = comp(sp);
-			if(isJump(sp)) cInst->jump = jump(sp);
+			if(isJump(sp)){
+				cInst->jump = jump(sp);
+				cInst->comp = jumpComp(sp);
+			}
+
+			*(cInstructions + i++) = cInst;
 		} 
 		else if(strcmp("A_INSTRUCTION", it) == 0){
 			if(isSymbol(sp)) cInst->symbol = symbolC(sp);
 			if(isAddress(sp)) cInst->address = address(sp);
+
+			*(cInstructions + i++) = cInst;
 		}
 		else if(strcmp("L_INSTRUCTION", it) == 0){
 			if(isLabel(sp)) cInst->label = label(sp);
 
+			*(cInstructions + i++) = cInst;
 		} 
 		else if(strcmp("COMMENT", it) == 0){
 			printf("Skip comment.\n");
@@ -42,8 +50,6 @@ struct CInstruction** parser(char *sp){
 		}
 
 
-		*(cInstructions + i) = cInst;
-		i++;	
 		sp = advance(sp);
 	}
 	*(cInstructions + i) = NULL;
@@ -103,12 +109,24 @@ char *comp(char* sp){
 
 	int i = 0;
 	while(*sp++ != '=' && *sp != '\0');
-	while(*sp != '\n'){
+	while(*sp != '\n' && *sp != ' '){
 		*(compP + i++) = *sp++;
 	}
 	*(compP + i++) = '\0';
 
 	return compP;
+}
+
+char *jumpComp(char* sp){
+	char *jumpP = (char*) malloc(sizeof(char) * 100);
+
+	int i = 0;
+	while(*sp != '\0' && *sp != ';'){
+		*(jumpP + i++) = *sp++;
+	}
+	*(jumpP + i++) = '\0';
+
+	return jumpP;
 }
 
 char *jump(char* sp){
@@ -155,7 +173,7 @@ bool isAssignement(char *sp){
 char *address(char *sp){
 	char *addressP = (char*) malloc(sizeof(char) * 100);
 	int i = 0, j = 0;
-	while(*(sp + i) != '\n' && *(sp + i) != '\0'){
+	while(*(sp + i) != '\n' && *(sp + i) != '\0' && *(sp + i) != ' '){
 		if(*(sp + i) != '@'){
 			*(addressP + j) = *(sp + i);
 			j++;
@@ -171,7 +189,7 @@ char *address(char *sp){
 char *symbolC(char *sp){
 	char *symbolP = (char*) malloc(sizeof(char) * 100);
 	int i = 0, j = 0;
-	while(*(sp + i) != '\n' && *(sp + i) != '\0'){
+	while(*(sp + i) != '\n' && *(sp + i) != '\0' && *(sp + i) != ' '){
 		if(*(sp + i) != '@'){
 			*(symbolP + j) = *(sp + i);
 			j++;

@@ -27,6 +27,7 @@ char *jump(char*);
 char *symbolC(char *sp);
 char *address(char *sp);
 char *label(char *sp);
+char *jumpComp(char* sp);
 
 bool isJump(char *sp);
 bool isAssignement(char *sp);

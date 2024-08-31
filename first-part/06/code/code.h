@@ -12,3 +12,5 @@ struct SymbolRecord {
 struct SymbolRecord *findSymbol(struct SymbolRecord **symbolTableP, char *symbol);
 void addSymbol(struct SymbolRecord **symbolTableP, char *label, int value);
 
+char* int2bin(unsigned integer, int n);
+
