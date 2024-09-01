@@ -76,6 +76,8 @@ char *advance(char *sp){
 }
 
 char *instructionType(char *sp){
+	while(*sp == ' ' || *sp == '\t') sp++;
+
 	while(*sp != '\n' && *sp != '\0'){
 		if(*sp == ';' || *sp == '='){
 			return "C_INSTRUCTION";
@@ -101,7 +103,9 @@ char *instructionType(char *sp){
 
 
 char *dest(char* sp){
-	char *destP = (char*) malloc(sizeof(char) * 10);
+	char *destP = (char*) malloc(sizeof(char) * 128);
+
+	while(*sp == ' ' || *sp == '\t') sp++;
 
 	int i = 0;
 	while(*sp != '=' && *sp != '\0'){
@@ -113,7 +117,9 @@ char *dest(char* sp){
 };
 
 char *comp(char* sp){
-	char *compP = (char*) malloc(sizeof(char) * 10);
+	char *compP = (char*) malloc(sizeof(char) * 128);
+
+	while(*sp == ' ' || *sp == '\t') sp++;
 
 	int i = 0;
 	while(*sp++ != '=' && *sp != '\0');
@@ -126,7 +132,9 @@ char *comp(char* sp){
 }
 
 char *jumpComp(char* sp){
-	char *jumpP = (char*) malloc(sizeof(char) * 10);
+	char *jumpP = (char*) malloc(sizeof(char) * 128);
+
+	while(*sp == ' ' || *sp == '\t') sp++;
 
 	int i = 0;
 	while(*sp != '\0' && *sp != ';'){
@@ -138,7 +146,9 @@ char *jumpComp(char* sp){
 }
 
 char *jump(char* sp){
-	char *jumpP = (char*) malloc(sizeof(char) * 10);
+	char *jumpP = (char*) malloc(sizeof(char) * 128);
+
+	while(*sp == ' ' || *sp == '\t') sp++;
 
 	int i = 0, j = 0;
 	bool isJump = false;
@@ -159,6 +169,7 @@ char *jump(char* sp){
 
 bool isJump(char *sp){
 	bool isJ = false;
+
 	while(*sp != '\0' && *sp != '\n' && isJ == false){
 		isJ = *sp == ';';
 		sp++;
@@ -169,6 +180,7 @@ bool isJump(char *sp){
 
 bool isAssignement(char *sp){
 	bool isA = false;
+
 	while(*sp != '\0' && *sp != '\n' && isA == false){
 		isA = *sp == '=';
 		sp++;
@@ -179,8 +191,11 @@ bool isAssignement(char *sp){
 
 /* A command */
 char *address(char *sp){
-	char *addressP = (char*) malloc(sizeof(char) * 10);
+	char *addressP = (char*) malloc(sizeof(char) * 128);
 	int i = 0, j = 0;
+
+	while(*sp == ' ' || *sp == '\t') sp++;
+
 	while(*(sp + i) != '\n' && *(sp + i) != '\0' && *(sp + i) != ' '){
 		if(*(sp + i) != '@'){
 			*(addressP + j) = *(sp + i);
@@ -195,8 +210,11 @@ char *address(char *sp){
 }
 
 char *symbolC(char *sp){
-	char *symbolP = (char*) malloc(sizeof(char) * 100);
+	char *symbolP = (char*) malloc(sizeof(char) * 128);
 	int i = 0, j = 0;
+
+	while(*sp == ' ' || *sp == '\t') sp++;
+
 	while(*(sp + i) != '\n' && *(sp + i) != '\0' && *(sp + i) != ' '){
 		if(*(sp + i) != '@'){
 			*(symbolP + j) = *(sp + i);
@@ -211,9 +229,15 @@ char *symbolC(char *sp){
 }
 
 bool isSymbol(char *sp){
-	bool isAt = *(sp++) == '@';
-	bool firstCharNotNumber = *(sp++) >= 'A';
+	bool isAt = false;
+	bool firstCharNotNumber = false;
 	bool isS = true;
+
+	while(*sp == ' ' || *sp == '\t') sp++;
+
+	isAt = *(sp++) == '@';
+	firstCharNotNumber = *(sp++) >= 'A';
+
 	while(*sp != '\0' && *sp != '\n' && *sp != ' ' && *sp != '\t' && isS == true){
 		isS = (*sp >= 'a' && *sp <= 'z') ||
 			(*sp >= 'A' && *sp <= 'Z') || 
@@ -226,8 +250,13 @@ bool isSymbol(char *sp){
 }
 
 bool isAddress(char *sp){
-	bool isAt = *(sp++) == '@';
+	bool isAt = false;
 	bool isA = true;
+
+	while(*sp == ' ' || *sp == '\t') sp++;
+
+	isAt = *(sp++) == '@';
+
 	while(*sp != '\0' && *sp != '\n' && *sp != ' ' && *sp != '\t' && isA == true){
 		isA = (*sp >= '0' && *sp <= '9');
 		sp++;
@@ -237,13 +266,18 @@ bool isAddress(char *sp){
 
 /* L command */
 bool isLabel(char *sp){
+	while(*sp == ' ' || *sp == '\t') sp++;
+
 	char isL = *sp == '(';
 	return isL;
 }
 
 char *label(char *sp){
-	char *labelP = (char*) malloc(sizeof(char) * 100);
+	char *labelP = (char*) malloc(sizeof(char) * 128);
 	int i = 0, j = 0;
+
+	while(*sp == ' ' || *sp == '\t') sp++;
+
 	while(*(sp + i) != '\n' && *(sp + i) != ')'){
 		if(*(sp + i) != '('){
 			*(labelP + j) = *(sp + i);

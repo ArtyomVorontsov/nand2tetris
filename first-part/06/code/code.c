@@ -2,7 +2,7 @@
 
 char **code(struct CInstruction **instructions){
 	char **generatedCode = (char **) malloc(sizeof(char *) * 1000);
-	int i = 0, line = 0;
+	int i = 0, j = 0, line = 0;
 	struct CInstruction *inst;
 	struct SymbolRecord **symbolTable = malloc(sizeof(struct SymbolRecord*) * 100);
 	*symbolTable = NULL;
@@ -10,6 +10,19 @@ char **code(struct CInstruction **instructions){
 	int lastSymbolValue = 16;
 
 	
+	while((inst = *(instructions + i)) != NULL){
+		if(inst->label){
+			addSymbol(symbolTable, inst->label, line);
+		}
+		if(inst->label == NULL){
+			line++;
+		}
+
+		i++;
+	}
+
+	i = 0;
+	line = 0;
 	while((inst = *(instructions + i)) != NULL){
 		if(inst->symbol && (findSymbol(symbolTable, inst->symbol) == NULL)){
 			if(strcmp(inst->symbol, "SCREEN") == 0){
@@ -67,12 +80,10 @@ char **code(struct CInstruction **instructions){
 				addSymbol(symbolTable, inst->symbol, 15);
 			} 
 			else {
-				addSymbol(symbolTable, inst->symbol, lastSymbolValue++);
+				addSymbol(symbolTable, inst->symbol, lastSymbolValue);
+				lastSymbolValue = lastSymbolValue + 1;
 			}
-		} else if(inst->label){
-			addSymbol(symbolTable, inst->label, line);
-		}
-
+		} 
 
 		if(inst->label == NULL){
 			line++;
@@ -93,9 +104,9 @@ char **code(struct CInstruction **instructions){
 
 	i = 0;
 	while((inst = *(instructions + i)) != NULL){
-		char * binary = malloc(sizeof(char) * 17);
-
 		if(inst->dest || inst->comp || inst->jump){
+			char * binary = malloc(sizeof(char) * 17);
+
 			binary[0] = '1';
 			binary[1] = '1';
 			binary[2] = '1';
@@ -424,7 +435,7 @@ char **code(struct CInstruction **instructions){
 				*d1 = '1';
 				*d2 = '0';
 			}
-			else if(strcmp(inst->dest, "DM") == 0){
+			else if((strcmp(inst->dest, "DM") == 0) || (strcmp(inst->dest, "MD") == 0)){
 				*d0 = '0';
 				*d1 = '1';
 				*d2 = '1';
@@ -493,8 +504,12 @@ char **code(struct CInstruction **instructions){
 				*j2 = '1';
 			} 
 
+			binary[16] = '\n';
+			generatedCode[j] = binary;
+			j++;
 		}
 		else if (inst->address || inst->symbol){
+			char *binary = malloc(sizeof(char) * 17);
 			binary[0] = '0';
 
 			if(inst->address){
@@ -541,12 +556,11 @@ char **code(struct CInstruction **instructions){
 				binary[15] = *(binString + 0); 
 			}
 
+			binary[16] = '\n';
+			generatedCode[j] = binary;
+			j++;
 		}
-		binary[16] = '\n';
-		generatedCode[i] = binary;
 		i++;
-				
-
 	}
 	generatedCode[i] = NULL;
 

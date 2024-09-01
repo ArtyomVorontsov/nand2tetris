@@ -1,15 +1,8 @@
 FILE := $(wildcard *.c)
 OUTPUT_FILE := $(subst .c,.out,${FILE}) 
-TEST_FLAG_DATA := if(argc > 1){ if(strcmp(argv[1], "--test") == 0){ RunAllTests(); return 0; }; printf("Not supported parameter(s) is(are) passed\\n"); return 1; }
-TEST_FLAG = \/\/TEST_FLAG
-
 
 assembler.out:assembler.c ./parser/parser.c  ./code/code.c
-	touch buffer.c
-	cat ${FILE} > buffer.c
-	sed -i 's/${TEST_FLAG}/${TEST_FLAG_DATA}/' buffer.c
-	gcc -g -std=c99 -o ${OUTPUT_FILE} ./code/code.h ./code/code.c ./parser/parser.h ./parser/parser.c ../../AllTests.c ../../lib/cutest-1.5/CuTest.c buffer.c
-	rm -f buffer.c
+	gcc -g -std=c99 -o ${OUTPUT_FILE} ./code/code.h ./code/code.c ./parser/parser.h ./parser/parser.c ../../AllTests.c ../../lib/cutest-1.5/CuTest.c assembler.h assembler.c
 
 clean:
 	rm -f ${OUTPUT_FILE}

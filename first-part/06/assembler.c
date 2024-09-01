@@ -30,6 +30,13 @@ int main(int argc, char **argv){
 	}
 
 	generatedCode = code(parsed);
+
+
+	// Print generated code
+	for(int i = 0; *(generatedCode + i) != NULL; i++){
+		printf("%s", *(generatedCode + i));
+	}
+
 	char *fileNameWithoutExtension = 
 		getFileNameWithoutExtension(sourceCodeFilename);
 
