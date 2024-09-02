@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <string.h>
 
 
 struct CInstruction {
@@ -11,12 +12,13 @@ struct CInstruction {
 	char *address;
 	char *symbol;
 	char *label;
+	int line;
 };
 
 
 char **code(struct CInstruction **instructions);
 struct CInstruction** parser(char *sp);
-char * getProgramText(char *sourceCodeFilename);
+char * getProgramText(char *sourceCodeFileName);
 void writeTextToFile(char *fileName, char **generatedCode);
-char *getFileNameWithoutExtension(char *filename);
+char *getFileNameWithoutExtension(char *fileName);
 

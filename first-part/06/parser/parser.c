@@ -22,7 +22,14 @@ struct CInstruction** parser(char *sp){
 		}
 
 		struct CInstruction* cInst = (struct CInstruction*) malloc(sizeof (struct CInstruction));
-		
+		cInst->dest = NULL;
+		cInst->address = NULL;
+		cInst->symbol = NULL;
+		cInst->label = NULL;
+		cInst->comp = NULL;
+		cInst->jump = NULL;
+		cInst->line = 0;
+
 		char *it = instructionType(sp);
 
 		if(strcmp("C_INSTRUCTION", it) == 0){
@@ -37,24 +44,25 @@ struct CInstruction** parser(char *sp){
 				cInst->comp = jumpComp(sp);
 			}
 
+			cInst->line = i;
 			*(cInstructions + i++) = cInst;
 		} 
 		else if(strcmp("A_INSTRUCTION", it) == 0){
 			if(isSymbol(sp)) cInst->symbol = symbolC(sp);
 			if(isAddress(sp)) cInst->address = address(sp);
 
+			cInst->line = i;
 			*(cInstructions + i++) = cInst;
 		}
 		else if(strcmp("L_INSTRUCTION", it) == 0){
 			if(isLabel(sp)) cInst->label = label(sp);
 
+			cInst->line = i;
 			*(cInstructions + i++) = cInst;
 		} 
 		else if(strcmp("COMMENT", it) == 0){
-			printf("Skip comment.\n");
 		}
 		else if(strcmp("NOT_DETERMINED", it) == 0){
-			printf("Skip space or empty line.\n");
 		}
 
 
@@ -242,7 +250,9 @@ bool isSymbol(char *sp){
 		isS = (*sp >= 'a' && *sp <= 'z') ||
 			(*sp >= 'A' && *sp <= 'Z') || 
 			(*sp >= '0' && *sp <= '9') ||
-			(*sp == '_');
+			(*sp == '_') || 
+			(*sp == '.') ||
+			(*sp == '$');
 
 		sp++;
 	}

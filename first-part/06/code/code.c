@@ -1,10 +1,18 @@
 #include "./code.h"
 
+extern bool LOG_STAGES;
+
+const int GENERATED_CODE_PAGE_SIZE = 1000;
+const int SYMBOL_TABLE_PAGE_SIZE = 100;
+int symbolTableSymbolsAmount = 0;
+
 char **code(struct CInstruction **instructions){
-	char **generatedCode = (char **) malloc(sizeof(char *) * 1000);
+	int generatedCodeSize = GENERATED_CODE_PAGE_SIZE;
+	int symbolTableSize = SYMBOL_TABLE_PAGE_SIZE;
+	char **generatedCode = (char **) malloc(sizeof(char *) * generatedCodeSize);
 	int i = 0, j = 0, line = 0;
 	struct CInstruction *inst;
-	struct SymbolRecord **symbolTable = malloc(sizeof(struct SymbolRecord*) * 100);
+	struct SymbolRecord **symbolTable = malloc(sizeof(struct SymbolRecord*) * symbolTableSize);
 	*symbolTable = NULL;
 
 	int lastSymbolValue = 16;
@@ -16,6 +24,11 @@ char **code(struct CInstruction **instructions){
 		}
 		if(inst->label == NULL){
 			line++;
+		}
+
+		if(symbolTableSize <= symbolTableSymbolsAmount){
+			symbolTableSize = symbolTableSize + SYMBOL_TABLE_PAGE_SIZE;
+			symbolTable = realloc(symbolTable, sizeof(struct SymbolRecord*) * symbolTableSize);
 		}
 
 		i++;
@@ -79,9 +92,30 @@ char **code(struct CInstruction **instructions){
 			else if(strcmp(inst->symbol, "R15") == 0){
 				addSymbol(symbolTable, inst->symbol, 15);
 			} 
+			else if(strcmp(inst->symbol, "SP") == 0){
+				addSymbol(symbolTable, inst->symbol, 0);
+			} 
+			else if(strcmp(inst->symbol, "LCL") == 0){
+				addSymbol(symbolTable, inst->symbol, 1);
+			} 
+			else if(strcmp(inst->symbol, "ARG") == 0){
+				addSymbol(symbolTable, inst->symbol, 2);
+			} 
+			else if(strcmp(inst->symbol, "THIS") == 0){
+				addSymbol(symbolTable, inst->symbol, 3);
+			} 
+			else if(strcmp(inst->symbol, "THAT") == 0){
+				addSymbol(symbolTable, inst->symbol, 4);
+			} 
 			else {
 				addSymbol(symbolTable, inst->symbol, lastSymbolValue);
 				lastSymbolValue = lastSymbolValue + 1;
+			}
+			symbolTableSymbolsAmount++;
+
+			if(symbolTableSize <= symbolTableSymbolsAmount){
+				symbolTableSize = symbolTableSize + SYMBOL_TABLE_PAGE_SIZE;
+				symbolTable = realloc(symbolTable, sizeof(struct SymbolRecord*) * symbolTableSize);
 			}
 		} 
 
@@ -93,19 +127,22 @@ char **code(struct CInstruction **instructions){
 	} 
 
 	//print symbol table
-	for(int i = 0; *(symbolTable + i) != NULL; i++){
-		printf("symbol: %s\nvalue: %d\n\n", 
-			(*(symbolTable + i))->symbol, 
-			(*(symbolTable + i))->value
-		);
-	} 
+
+	if(LOG_STAGES){
+		for(int i = 0; *(symbolTable + i) != NULL; i++){
+			printf("Symbol: %s\nValue: %d\n\n", 
+				(*(symbolTable + i))->symbol, 
+				(*(symbolTable + i))->value
+			);
+		}
+	}
 	
 
 
 	i = 0;
 	while((inst = *(instructions + i)) != NULL){
 		if(inst->dest || inst->comp || inst->jump){
-			char * binary = malloc(sizeof(char) * 17);
+			char * binary = malloc(sizeof(char) * 18);
 
 			binary[0] = '1';
 			binary[1] = '1';
@@ -505,11 +542,12 @@ char **code(struct CInstruction **instructions){
 			} 
 
 			binary[16] = '\n';
+			binary[17] = '\0';
 			generatedCode[j] = binary;
 			j++;
 		}
 		else if (inst->address || inst->symbol){
-			char *binary = malloc(sizeof(char) * 17);
+			char *binary = malloc(sizeof(char) * 18);
 			binary[0] = '0';
 
 			if(inst->address){
@@ -557,10 +595,17 @@ char **code(struct CInstruction **instructions){
 			}
 
 			binary[16] = '\n';
+			binary[17] = '\0';
 			generatedCode[j] = binary;
 			j++;
 		}
 		i++;
+
+		if(generatedCodeSize < i){
+			generatedCodeSize = generatedCodeSize + GENERATED_CODE_PAGE_SIZE;
+			generatedCode = realloc(generatedCode, sizeof(char *) * generatedCodeSize);
+		}
+
 	}
 	generatedCode[i] = NULL;
 
@@ -617,13 +662,14 @@ void addSymbol(struct SymbolRecord **symbolTableP, char *label, int value){
 	if(record == NULL){
 		int i = 0;
 		struct SymbolRecord *newRecord = malloc(sizeof(struct SymbolRecord));
-		while((*(symbolTableP + i) != NULL) && (i < 99)) i++;
+		while((*(symbolTableP + i) != NULL)) i++;
 
 		newRecord->symbol = label;
 		newRecord->value = value;
 
 		*(symbolTableP + i) = newRecord;
 		*(symbolTableP + i + 1) = NULL;
+		symbolTableSymbolsAmount = i + 1;
 	} else {
 		record->value = value;
 	}
