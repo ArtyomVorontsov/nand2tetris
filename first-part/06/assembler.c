@@ -61,7 +61,7 @@ char *getFileNameWithoutExtension(char *fileName){
 	char *fnp = fileName + fileNameLength;
 	bool extensionPassed = false;
 
-	while(*(fnp - i) != '/' && i < fileNameLength){
+	while(*(fnp - i) != '/' && i <= fileNameLength){
 		if(extensionPassed){
 			*(fileNameWithoutExtension + j) = *(fnp - i);
 			j++;
