@@ -2,5 +2,6 @@
 *.out
 text.asm
 text.hack
+text.vm
 a.hack
 .gdb_history

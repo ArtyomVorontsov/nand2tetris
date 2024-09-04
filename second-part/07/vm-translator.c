@@ -12,15 +12,31 @@ int main(int argc, char **argv){
 	const int MAX_LINE_SIZE = 1000;
 	FILE *sfp, *dfp;
 	char line[MAX_LINE_SIZE];
+	struct VmInst *vmInst;
+	char *asmInst;
 
 	sfp = fopen(sourceFileName, "r");
-	dfp= fopen(destFileName, "a");
+	dfp= fopen(destFileName, "w");
 
-	while(feof(sfp) == false){
+	int i = 0;
+	while(1){
 		fgets(line, MAX_LINE_SIZE, sfp);
+		if(feof(sfp) == true) break;
 
-		fprintf(dfp, "%s", line);
+		vmInst = parser(line, i);
+		printf("type: %s\ncmnd: %s\narg1: %s\narg2: %s\nline: %d\n\n",
+				vmInst->type,
+				vmInst->cmnd,
+				vmInst->arg1,
+				vmInst->arg2,
+				vmInst->line);
 
+
+		asmInst = codeWriter(vmInst);
+		printf("asmInst: %s\n\n", asmInst);
+
+		fprintf(dfp, "%s", asmInst);
+		i++;
 	}
 
 	fclose(sfp);
