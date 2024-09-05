@@ -3,6 +3,9 @@
 // TODO:
 // Implement parser
 // Implement code generation 
+// - Think about code which will be generated for push
+// - Think about code which will be generated for pop
+// - think about code which will be generated for arithmetic
 
 int main(int argc, char **argv){
 
