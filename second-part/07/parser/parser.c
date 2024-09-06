@@ -3,13 +3,20 @@
 
 
 struct VmInst *parser(char *line, int lineNumber){
-	char *cmnd = arg1(line);
+	char *cmnd = getCmnd(line);
 	char *cmndType = commandType(cmnd);
 	char *a1, *a2;
 	struct VmInst *vmInst = malloc(sizeof(struct VmInst));
 
 	if((strcmp("C_RETURN", cmndType) > 0)){
 		vmInst->arg1 = cmnd;
+
+		if((strcmp("C_PUSH", cmndType) == 0)){
+			vmInst->arg1 = argX(line, 1);
+		}
+		else if((strcmp("C_POP", cmndType) == 0)){
+			vmInst->arg1 = argX(line, 1);
+		}
 	}
 
 	if(
@@ -18,7 +25,7 @@ struct VmInst *parser(char *line, int lineNumber){
 		(strcmp("C_FUNCTION", cmndType) == 0) ||
 		(strcmp("C_CALL", cmndType) == 0)
 	){
-		vmInst->arg2 = arg2(line);
+		vmInst->arg2 = argX(line, 2);
 	}
 
 	vmInst->cmnd = cmnd;
@@ -28,13 +35,16 @@ struct VmInst *parser(char *line, int lineNumber){
 	return vmInst;
 }
 
-char *arg2(char *s){
+
+char *argX(char *s, int x){
 	int i = 0;
 	char *cmnd = malloc(sizeof(char) * 100);
 	while(*(s + i) == ' ') i++;
-	while(*(s + i) != ' ') i++;
-	while(*(s + i) == ' ') i++;
 
+	while(x--){
+		while(*(s + i) != ' ') i++;
+		while(*(s + i) == ' ') i++;
+	}
 
 	int j = 0;
 	while((*(s + i) != '\t') && (*(s + i) != ' ') && (*(s + i) != '\n')){
@@ -48,11 +58,10 @@ char *arg2(char *s){
 	return cmnd;
 }
 
-char *arg1(char *s){
+char *getCmnd(char *s){
 	int i = 0;
 	char *cmnd = malloc(sizeof(char) * 100);
 	while(*(s + i) == ' ') i++;
-
 
 	int j = 0;
 	while((*(s + i) != '\t') && (*(s + i) != ' ') && (*(s + i) != '\n')){
@@ -65,6 +74,7 @@ char *arg1(char *s){
 
 	return cmnd;
 }
+
 
 char *commandType(char *cmnd){
 	if(strcmp(cmnd, "push") == 0){
