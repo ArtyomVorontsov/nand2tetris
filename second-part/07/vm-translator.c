@@ -1,11 +1,5 @@
 #include "./vm-translator.h"
 
-// TODO:
-// Implement parser
-// Implement code generation 
-// - Think about code which will be generated for push
-// - Think about code which will be generated for pop
-// - think about code which will be generated for arithmetic
 
 int main(int argc, char **argv){
 
@@ -23,6 +17,9 @@ int main(int argc, char **argv){
 
 	int i = 0;
 
+
+
+	// static linkage to memory addresses, will be improved in chapter 8
 	fprintf(dfp, "%s", "@256\n");
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@SP\n");
@@ -31,6 +28,12 @@ int main(int argc, char **argv){
 	fprintf(dfp, "%s", "@2000\n");
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@LCL\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "%s", "@3000\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@TEMP\n");
 	fprintf(dfp, "%s", "M=D\n");
 	fprintf(dfp, "%s", "\n");
 

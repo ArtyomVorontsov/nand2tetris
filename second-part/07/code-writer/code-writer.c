@@ -19,6 +19,23 @@ char *codeWriter(struct VmInst *inst){
 			sprintf(asmInst + strlen(asmInst), "A=A+D\n");
 			sprintf(asmInst + strlen(asmInst), "M=D\n");
 		}
+		else if(strcmp(inst->arg1, "pointer") == 0){
+		 	if(strcmp(inst->arg2, "0") == 0){
+				sprintf(asmInst + strlen(asmInst), "@THIS\n");
+				sprintf(asmInst + strlen(asmInst), "D=M\n");
+			}  
+		 	else if(strcmp(inst->arg2, "1") == 0){
+				sprintf(asmInst + strlen(asmInst), "@THAT\n");
+				sprintf(asmInst + strlen(asmInst), "D=M\n");
+			}
+		}
+		else if(strcmp(inst->arg1, "temp") == 0){
+			sprintf(asmInst + strlen(asmInst), "@TEMP\n");
+			sprintf(asmInst + strlen(asmInst), "D=A\n");
+			sprintf(asmInst + strlen(asmInst), "@%s\n", inst->arg2);
+			sprintf(asmInst + strlen(asmInst), "A=A+D\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+		}
 
 		genPushOnTheStackDRegister(asmInst);
 		sprintf(asmInst + strlen(asmInst), "\n");
@@ -31,6 +48,36 @@ char *codeWriter(struct VmInst *inst){
 		if(strcmp(inst->arg1, "local") == 0){
 			sprintf(asmInst + strlen(asmInst), "\n");
 			sprintf(asmInst + strlen(asmInst), "@LCL // calculate LCL with offset and safe in R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@%s\n", inst->arg2);
+			sprintf(asmInst + strlen(asmInst), "D=D+A\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+
+			sprintf(asmInst + strlen(asmInst), "\n");
+			sprintf(asmInst + strlen(asmInst), "@R13 // store value in R13 in address which is stored in R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "A=M\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+		}
+		else if(strcmp(inst->arg1, "pointer") == 0){
+		 	if(strcmp(inst->arg2, "0") == 0){
+				sprintf(asmInst + strlen(asmInst), "@R13\n");
+				sprintf(asmInst + strlen(asmInst), "D=M\n");
+				sprintf(asmInst + strlen(asmInst), "@THIS\n");
+				sprintf(asmInst + strlen(asmInst), "M=D\n");
+			}  
+		 	else if(strcmp(inst->arg2, "1") == 0){
+				sprintf(asmInst + strlen(asmInst), "@R13\n");
+				sprintf(asmInst + strlen(asmInst), "D=M\n");
+				sprintf(asmInst + strlen(asmInst), "@THAT\n");
+				sprintf(asmInst + strlen(asmInst), "M=D\n");
+			}
+		}
+		if(strcmp(inst->arg1, "temp") == 0){
+			sprintf(asmInst + strlen(asmInst), "\n");
+			sprintf(asmInst + strlen(asmInst), "@TEMP // calculate TEMP with offset and safe in R14\n");
 			sprintf(asmInst + strlen(asmInst), "D=M\n");
 			sprintf(asmInst + strlen(asmInst), "@%s\n", inst->arg2);
 			sprintf(asmInst + strlen(asmInst), "D=D+A\n");
