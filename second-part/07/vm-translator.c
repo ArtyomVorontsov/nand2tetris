@@ -11,7 +11,7 @@ int main(int argc, char **argv){
 
 	char *sourceFileName = *(argv + 1);
 	char *fileNameWithoutExtension = getFileNameWithoutExtension(sourceFileName);
-	char *destFileName = strcat(fileNameWithoutExtension, ".hack");
+	char *destFileName = strcat(fileNameWithoutExtension, ".asm");
 	const int MAX_LINE_SIZE = 1000;
 	FILE *sfp, *dfp;
 	char line[MAX_LINE_SIZE];
@@ -22,21 +22,34 @@ int main(int argc, char **argv){
 	dfp= fopen(destFileName, "w");
 
 	int i = 0;
+
+	fprintf(dfp, "%s", "@256\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@SP\n");
+	fprintf(dfp, "%s", "M=D\n");
+
+	fprintf(dfp, "%s", "@2000\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@LCL\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
 	while(1){
 		fgets(line, MAX_LINE_SIZE, sfp);
 		if(feof(sfp) == true) break;
 
 		vmInst = parser(line, i);
+		/*
 		printf("type: %s\ncmnd: %s\narg1: %s\narg2: %s\nline: %d\n\n",
 				vmInst->type,
 				vmInst->cmnd,
 				vmInst->arg1,
 				vmInst->arg2,
-				vmInst->line);
+				vmInst->line); */
 
 
 		asmInst = codeWriter(vmInst);
-		printf("asmInst: %s\n\n", asmInst);
+		// printf("asmInst: %s\n\n", asmInst);
 
 		fprintf(dfp, "%s", asmInst);
 		i++;
