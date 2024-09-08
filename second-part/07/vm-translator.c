@@ -1,10 +1,14 @@
 #include "./vm-translator.h"
 
+char * SourceFileName;
+/*TODO:
+ * Add other arithmetic operations apart of add
+ */
 
 int main(int argc, char **argv){
 
-	char *sourceFileName = *(argv + 1);
-	char *fileNameWithoutExtension = getFileNameWithoutExtension(sourceFileName);
+	SourceFileName = *(argv + 1);
+	char *fileNameWithoutExtension = getFileNameWithoutExtension(SourceFileName);
 	char *destFileName = strcat(fileNameWithoutExtension, ".asm");
 	const int MAX_LINE_SIZE = 1000;
 	FILE *sfp, *dfp;
@@ -12,7 +16,7 @@ int main(int argc, char **argv){
 	struct VmInst *vmInst;
 	char *asmInst;
 
-	sfp = fopen(sourceFileName, "r");
+	sfp = fopen(SourceFileName, "r");
 	dfp= fopen(destFileName, "w");
 
 	int i = 0;
@@ -57,6 +61,11 @@ int main(int argc, char **argv){
 		fprintf(dfp, "%s", asmInst);
 		i++;
 	}
+
+
+	fprintf(dfp, "(EOF_LOOP)\n");
+	fprintf(dfp, "@EOF_LOOP\n");
+	fprintf(dfp, "0;JMP\n");
 
 	fclose(sfp);
 	fclose(dfp);
