@@ -120,6 +120,131 @@ char *codeWriter(struct VmInst *inst){
 			sprintf(asmInst + strlen(asmInst), "D=D+M\n");
 			genPushOnTheStackDRegister(asmInst);
 		}
+		else if(strcmp(inst->arg1, "sub") == 0){
+			sprintf(asmInst + strlen(asmInst), "// sub instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=D-M\n");
+			genPushOnTheStackDRegister(asmInst);
+		}
+		else if(strcmp(inst->arg1, "neg") == 0){
+			sprintf(asmInst + strlen(asmInst), "// neg instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=-M\n");
+			genPushOnTheStackDRegister(asmInst);
+		}
+		else if(strcmp(inst->arg1, "and") == 0){
+			sprintf(asmInst + strlen(asmInst), "// and instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=D&M\n");
+			genPushOnTheStackDRegister(asmInst);
+		}
+		else if(strcmp(inst->arg1, "eq") == 0){
+			sprintf(asmInst + strlen(asmInst), "// eq instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=D-M\n");
+			sprintf(asmInst + strlen(asmInst), "@NEQ.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "D;JNE\n");
+			sprintf(asmInst + strlen(asmInst), "D=1\n");
+			sprintf(asmInst + strlen(asmInst), "@EQ.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "0;JMP\n");
+			sprintf(asmInst + strlen(asmInst), "(NEQ.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "D=0\n");
+			sprintf(asmInst + strlen(asmInst), "(EQ.%s.%d)\n", SourceFileName, inst->line);
+
+			genPushOnTheStackDRegister(asmInst);
+		}
+		else if(strcmp(inst->arg1, "gt") == 0){
+			sprintf(asmInst + strlen(asmInst), "// gt instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=D-M\n");
+			sprintf(asmInst + strlen(asmInst), "@GT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "D;JGT\n");
+			sprintf(asmInst + strlen(asmInst), "D=0\n");
+			sprintf(asmInst + strlen(asmInst), "@NGT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "0;JMP\n");
+			sprintf(asmInst + strlen(asmInst), "(GT.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "D=1\n");
+			sprintf(asmInst + strlen(asmInst), "(NGT.%s.%d)\n", SourceFileName, inst->line);
+
+			genPushOnTheStackDRegister(asmInst);
+		}
+		else if(strcmp(inst->arg1, "lt") == 0){
+			sprintf(asmInst + strlen(asmInst), "// lt instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=D-M\n");
+			sprintf(asmInst + strlen(asmInst), "@LT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "D;JLT\n");
+			sprintf(asmInst + strlen(asmInst), "D=0\n");
+			sprintf(asmInst + strlen(asmInst), "@NLT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "0;JMP\n");
+			sprintf(asmInst + strlen(asmInst), "(LT.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "D=1\n");
+			sprintf(asmInst + strlen(asmInst), "(NLT.%s.%d)\n", SourceFileName, inst->line);
+
+			genPushOnTheStackDRegister(asmInst);
+		}
+		else if(strcmp(inst->arg1, "or") == 0){
+			sprintf(asmInst + strlen(asmInst), "// or instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "M=D\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=M\n");
+			sprintf(asmInst + strlen(asmInst), "@R14\n");
+			sprintf(asmInst + strlen(asmInst), "D=D|M\n");
+			genPushOnTheStackDRegister(asmInst);
+		}
+		else if(strcmp(inst->arg1, "not") == 0){
+			sprintf(asmInst + strlen(asmInst), "// not instruction\n");
+			genPopFromTheStackIntoR13Register(asmInst);
+			sprintf(asmInst + strlen(asmInst), "@R13\n");
+			sprintf(asmInst + strlen(asmInst), "D=!M\n");
+			genPushOnTheStackDRegister(asmInst);
+		}
 	} 
 	else {
 		sprintf(asmInst, "// not determined\n");
