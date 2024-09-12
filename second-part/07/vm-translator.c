@@ -41,6 +41,24 @@ int main(int argc, char **argv){
 	fprintf(dfp, "%s", "M=D\n");
 	fprintf(dfp, "%s", "\n");
 
+	fprintf(dfp, "%s", "@4000\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@ARG\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "%s", "@5000\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@THIS\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "%s", "@6000\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@THAT\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
 	while(1){
 		fgets(line, MAX_LINE_SIZE, sfp);
 		if(feof(sfp) == true) break;
