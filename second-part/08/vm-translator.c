@@ -2,7 +2,6 @@
 
 char * SourceFileName;
 /*TODO:
- * Add support for goto, if-goto
  * Add support for multifile compilation 
  * Add support for functions
  */
@@ -22,8 +21,6 @@ int main(int argc, char **argv){
 	dfp= fopen(destFileName, "w");
 
 	int i = 0;
-
-
 
 	// static linkage to memory addresses, will be improved in chapter 8
 	fprintf(dfp, "%s", "@256\n");
@@ -66,13 +63,13 @@ int main(int argc, char **argv){
 		if(feof(sfp) == true) break;
 
 		vmInst = parser(line, i);
-		/*
+		
 		printf("type: %s\ncmnd: %s\narg1: %s\narg2: %s\nline: %d\n\n",
 				vmInst->type,
 				vmInst->cmnd,
 				vmInst->arg1,
 				vmInst->arg2,
-				vmInst->line); */
+				vmInst->line); 
 
 
 		asmInst = codeWriter(vmInst);

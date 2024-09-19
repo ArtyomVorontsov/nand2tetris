@@ -322,6 +322,21 @@ char *codeWriter(struct VmInst *inst){
 			genPushOnTheStackDRegister(asmInst);
 		}
 	} 
+	else if(strcmp(inst->type, "C_GOTO") == 0){
+		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
+	}
+	else if(strcmp(inst->type, "C_IF_GOTO") == 0){
+		sprintf(asmInst + strlen(asmInst), "@SP\n");
+		sprintf(asmInst + strlen(asmInst), "A=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "D;JNE\n");
+	}
+	else if(strcmp(inst->type, "LABEL") == 0){
+		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileName);
+
+	}
 	else {
 		sprintf(asmInst, "// not determined\n");
 	}

@@ -1,24 +1,25 @@
 #include "./parser.h"
 
-
-
 struct VmInst *parser(char *line, int lineNumber){
 	char *cmnd = getCmnd(line);
 	char *cmndType = commandType(cmnd);
 	char *a1, *a2;
 	struct VmInst *vmInst = malloc(sizeof(struct VmInst));
 
-	if((strcmp("C_RETURN", cmndType) > 0)){
+	if((strcmp("C_RETURN", cmndType) != 0)){
 		vmInst->arg1 = cmnd;
 
-		if((strcmp("C_PUSH", cmndType) == 0)){
-			vmInst->arg1 = argX(line, 1);
-		}
-		else if((strcmp("C_POP", cmndType) == 0)){
+		if(
+			(strcmp("C_POP", cmndType) == 0) ||
+			(strcmp("C_PUSH", cmndType) == 0) ||
+			(strcmp("C_GOTO", cmndType) == 0) ||
+			(strcmp("C_IF_GOTO", cmndType) == 0) ||
+			(strcmp("LABEL", cmndType) == 0)
+		){
 			vmInst->arg1 = argX(line, 1);
 		}
 	}
-
+	
 	if(
 		(strcmp("C_PUSH", cmndType) == 0) ||
 		(strcmp("C_POP", cmndType) == 0) ||
@@ -96,6 +97,16 @@ char *commandType(char *cmnd){
 	){
 		return "C_ARITHMETIC";
 	} 
+	else if((strcmp(cmnd, "goto") == 0)){
+		return "C_GOTO";
+
+	}
+	else if((strcmp(cmnd, "if-goto") == 0)){
+		return "C_IF_GOTO";
+	}
+	else if((strcmp(cmnd, "label") == 0)){
+		return "LABEL";
+	}
 	else {
 		return "NOT_DEFINED";
 	}
