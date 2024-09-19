@@ -2,7 +2,9 @@
 
 char * SourceFileName;
 /*TODO:
- * Add other arithmetic operations apart of add
+ * Add support for goto, if-goto
+ * Add support for multifile compilation 
+ * Add support for functions
  */
 
 int main(int argc, char **argv){
