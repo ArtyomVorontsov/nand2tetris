@@ -15,7 +15,8 @@ struct VmInst *parser(char *line, int lineNumber){
 			(strcmp("C_GOTO", cmndType) == 0) ||
 			(strcmp("C_IF_GOTO", cmndType) == 0) ||
 			(strcmp("LABEL", cmndType) == 0) ||
-			(strcmp("C_FUNCTION", cmndType) == 0)
+			(strcmp("C_FUNCTION", cmndType) == 0) ||
+			(strcmp("C_CALL", cmndType) == 0)
 		){
 			vmInst->arg1 = argX(line, 1);
 		}
@@ -26,7 +27,8 @@ struct VmInst *parser(char *line, int lineNumber){
 		(strcmp("C_POP", cmndType) == 0) ||
 		(strcmp("C_FUNCTION", cmndType) == 0) ||
 		(strcmp("C_CALL", cmndType) == 0) ||
-		(strcmp("C_FUNCTION", cmndType) == 0)
+		(strcmp("C_FUNCTION", cmndType) == 0) ||
+		(strcmp("C_CALL", cmndType) == 0)
 	){
 		vmInst->arg2 = argX(line, 2);
 	}
@@ -114,6 +116,9 @@ char *commandType(char *cmnd){
 	}
 	else if((strcmp(cmnd, "return") == 0)){
 		return "C_RETURN";
+	}
+	else if((strcmp(cmnd, "call") == 0)){
+		return "C_CALL";
 	}
 	else {
 		return "NOT_DEFINED";

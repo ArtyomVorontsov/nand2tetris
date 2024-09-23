@@ -7,8 +7,12 @@ char * SourceFileName;
  */
 char *functionNameCtx;
 
+struct AmountOfInvocations **functionInvocationsTable;
+int functionInvocationsTableLength = 0;
+
 int main(int argc, char **argv){
 	functionNameCtx = malloc(sizeof(char) * 1000);
+	functionInvocationsTable = malloc(sizeof(struct AmountOfInvocations *) * 1000);
 	SourceFileName = *(argv + 1);
 	char *fileNameWithoutExtension = getFileNameWithoutExtension(SourceFileName);
 	char *destFileName = strcat(fileNameWithoutExtension, ".asm");
@@ -57,6 +61,10 @@ int main(int argc, char **argv){
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@THAT\n");
 	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "@init.%s\n", SourceFileName);
+	fprintf(dfp, "0;JMP\n");
 	fprintf(dfp, "%s", "\n");
 
 	while(1){
@@ -123,3 +131,30 @@ char *getFileNameWithoutExtension(char *fileName){
 	return fileNameWithoutExtensionReversed;
 }
 
+void addFunctionInvocation(char *fnName){
+	struct AmountOfInvocations *functionInvocation = getFunctionInvocation(fnName);
+
+
+	if(functionInvocation){
+		functionInvocation->invocationAmount++;
+	} else {
+		functionInvocation = (struct AmountOfInvocations *) malloc(sizeof(struct AmountOfInvocations));
+		functionInvocation->functionName = fnName;
+		functionInvocation->invocationAmount = 1;
+		*(functionInvocationsTable + functionInvocationsTableLength) = functionInvocation;
+		functionInvocationsTableLength++;
+	}
+}
+
+struct AmountOfInvocations *getFunctionInvocation(char *fnName){
+	struct AmountOfInvocations *functionInvocation = NULL;
+
+	for(int i = 0; i < functionInvocationsTableLength; i++){
+		struct AmountOfInvocations *fnI = *(functionInvocationsTable + i);
+		if(strcmp(fnI->functionName, fnName) == 0){
+			functionInvocation = fnI;
+		}
+	}
+
+	return functionInvocation;
+}

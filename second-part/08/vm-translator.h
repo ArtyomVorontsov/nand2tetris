@@ -17,3 +17,11 @@ struct VmInst {
 
 struct VmInst *parser(char *line, int lineNumber);
 char *codeWriter(struct VmInst *inst);
+
+struct AmountOfInvocations {
+ 	char *functionName;
+	int invocationAmount;
+};
+
+void addFunctionInvocation(char *fnName);
+struct AmountOfInvocations *getFunctionInvocation(char *fnName);

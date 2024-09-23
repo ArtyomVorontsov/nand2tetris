@@ -1,18 +1,12 @@
 #include "./code-writer.h"
 
 extern char *SourceFileName;
-
-struct AmountOfInvocations {
- 	char *functionName;
-	int invocationAmount;
-};
-
-extern struct AmountOfInvocations *amountOfInvocations; 
+extern struct AmountOfInvocations *functionInvocationsTable; 
 extern char *functionNameCtx;
 
 char *codeWriter(struct VmInst *inst){
 
-	char *asmInst = malloc(sizeof(char) * 1000);
+	char *asmInst = malloc(sizeof(char) * 10000);
 
 	if(strcmp(inst->type, "C_PUSH") == 0){
 		sprintf(asmInst, "// push command\n");
@@ -351,8 +345,17 @@ char *codeWriter(struct VmInst *inst){
 	}
 	else if(strcmp(inst->type, "C_RETURN") == 0){
 		sprintf(asmInst + strlen(asmInst), "// Function %s epilogue\n", functionNameCtx);
+
+		genPopFromTheStackIntoR13Register(asmInst);
+		sprintf(asmInst + strlen(asmInst), "// Put return value for function which invoked that function\n");
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		sprintf(asmInst + strlen(asmInst), "@ARG\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
+
+		sprintf(asmInst + strlen(asmInst), "// Put saved memory segment values back\n");
 		sprintf(asmInst + strlen(asmInst), "@LCL\n");
-		sprintf(asmInst + strlen(asmInst), "D=A\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
 
 		sprintf(asmInst + strlen(asmInst), "@THAT\n");
 		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
@@ -372,6 +375,59 @@ char *codeWriter(struct VmInst *inst){
 		
 		sprintf(asmInst + strlen(asmInst), "A=D-1\n"); // Return
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
+	}
+	else if(strcmp(inst->type, "C_CALL") == 0){
+		sprintf(asmInst + strlen(asmInst), "// Function %s prologue\n", functionNameCtx);
+		addFunctionInvocation(inst->arg1);
+		struct AmountOfInvocations *functionInvocation = getFunctionInvocation(inst->arg1);
+
+		sprintf(asmInst + strlen(asmInst), "// Push return label value on top of the stack\n");
+		sprintf(asmInst + strlen(asmInst), "@%s$ret.%d\n", inst->arg1, functionInvocation->invocationAmount);
+		sprintf(asmInst + strlen(asmInst), "D=A\n");
+		genPushOnTheStackDRegister(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "// Save memory addresses of current function in stack frame\n");
+		sprintf(asmInst + strlen(asmInst), "@LCL\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		genPushOnTheStackDRegister(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "@ARG\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		genPushOnTheStackDRegister(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "@THIS\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		genPushOnTheStackDRegister(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "@THAT\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		genPushOnTheStackDRegister(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "// Assign new values for memory segments\n");
+		sprintf(asmInst + strlen(asmInst), "@SP\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		sprintf(asmInst + strlen(asmInst), "// Assign new value for LCL memory segment\n");
+		sprintf(asmInst + strlen(asmInst), "@LCL\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
+
+		sprintf(asmInst + strlen(asmInst), "// Assign new value for ARG memory segment\n");
+		sprintf(asmInst + strlen(asmInst), "@ARG\n");
+		sprintf(asmInst + strlen(asmInst), "M=D-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "@%s\n", inst->arg2);
+		sprintf(asmInst + strlen(asmInst), "D=A\n");
+		sprintf(asmInst + strlen(asmInst), "@ARG\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-D\n");
+
+
+		sprintf(asmInst + strlen(asmInst), "// JMP to function body code\n");
+		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
+
+		sprintf(asmInst + strlen(asmInst), "(%s$ret.%d)\n", inst->arg1, functionInvocation->invocationAmount);
 	}
 	else {
 		sprintf(asmInst, "// not determined\n");
