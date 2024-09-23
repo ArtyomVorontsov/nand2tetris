@@ -2,6 +2,14 @@
 
 extern char *SourceFileName;
 
+struct AmountOfInvocations {
+ 	char *functionName;
+	int invocationAmount;
+};
+
+extern struct AmountOfInvocations *amountOfInvocations; 
+extern char *functionNameCtx;
+
 char *codeWriter(struct VmInst *inst){
 
 	char *asmInst = malloc(sizeof(char) * 1000);
@@ -336,6 +344,34 @@ char *codeWriter(struct VmInst *inst){
 	else if(strcmp(inst->type, "LABEL") == 0){
 		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileName);
 
+	}
+	else if(strcmp(inst->type, "C_FUNCTION") == 0){
+		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileName);
+		functionNameCtx = inst->arg1;
+	}
+	else if(strcmp(inst->type, "C_RETURN") == 0){
+		sprintf(asmInst + strlen(asmInst), "// Function %s epilogue\n", functionNameCtx);
+		sprintf(asmInst + strlen(asmInst), "@LCL\n");
+		sprintf(asmInst + strlen(asmInst), "D=A\n");
+
+		sprintf(asmInst + strlen(asmInst), "@THAT\n");
+		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
+
+		sprintf(asmInst + strlen(asmInst), "@THIS\n");
+		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
+
+		sprintf(asmInst + strlen(asmInst), "@ARG\n");
+		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
+
+		sprintf(asmInst + strlen(asmInst), "@LCL\n");
+		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
+		
+		sprintf(asmInst + strlen(asmInst), "A=D-1\n"); // Return
+		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 	}
 	else {
 		sprintf(asmInst, "// not determined\n");

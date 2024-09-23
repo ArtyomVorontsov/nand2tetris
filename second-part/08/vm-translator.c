@@ -5,9 +5,10 @@ char * SourceFileName;
  * Add support for multifile compilation 
  * Add support for functions
  */
+char *functionNameCtx;
 
 int main(int argc, char **argv){
-
+	functionNameCtx = malloc(sizeof(char) * 1000);
 	SourceFileName = *(argv + 1);
 	char *fileNameWithoutExtension = getFileNameWithoutExtension(SourceFileName);
 	char *destFileName = strcat(fileNameWithoutExtension, ".asm");
