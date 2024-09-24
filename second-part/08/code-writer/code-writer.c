@@ -350,47 +350,45 @@ char *codeWriter(struct VmInst *inst){
 		sprintf(asmInst + strlen(asmInst), "// Put return value for function which invoked that function\n");
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
-		sprintf(asmInst + strlen(asmInst), "@ARG\n");
+		sprintf(asmInst + strlen(asmInst), "@R14\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
 		sprintf(asmInst + strlen(asmInst), "// Put saved memory segment values back\n");
-		sprintf(asmInst + strlen(asmInst), "@LCL\n");
-		sprintf(asmInst + strlen(asmInst), "D=M\n");
-		sprintf(asmInst + strlen(asmInst), "@R13\n");
-		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
+		genPopFromTheStackIntoR13Register(asmInst);
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
-		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
-		sprintf(asmInst + strlen(asmInst), "A=M\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@THAT\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
-
+		
+		genPopFromTheStackIntoR13Register(asmInst);
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
-		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
-		sprintf(asmInst + strlen(asmInst), "A=M\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@THIS\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
-
+		
+		genPopFromTheStackIntoR13Register(asmInst);
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
-		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
-		sprintf(asmInst + strlen(asmInst), "A=M\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@ARG\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
-
+		
+		genPopFromTheStackIntoR13Register(asmInst);
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
-		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
-		sprintf(asmInst + strlen(asmInst), "A=M\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@LCL\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
-		//
 		
+		sprintf(asmInst + strlen(asmInst), "// Jump to return label\n");
+		genPopFromTheStackIntoR13Register(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "// Push function return value on the stack\n");
+		sprintf(asmInst + strlen(asmInst), "@R14\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		genPushOnTheStackDRegister(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "// Jump to return label\n");
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
-		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
-		sprintf(asmInst + strlen(asmInst), "A=M\n");
 		sprintf(asmInst + strlen(asmInst), "A=M\n");
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 	}
