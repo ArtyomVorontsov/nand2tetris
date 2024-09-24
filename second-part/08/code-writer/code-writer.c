@@ -356,24 +356,42 @@ char *codeWriter(struct VmInst *inst){
 		sprintf(asmInst + strlen(asmInst), "// Put saved memory segment values back\n");
 		sprintf(asmInst + strlen(asmInst), "@LCL\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "A=M\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@THAT\n");
-		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "A=M\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@THIS\n");
-		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "A=M\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@ARG\n");
-		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "A=M\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@LCL\n");
-		sprintf(asmInst + strlen(asmInst), "D=D-1\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
+		//
 		
-		sprintf(asmInst + strlen(asmInst), "A=D-1\n"); // Return
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
+		sprintf(asmInst + strlen(asmInst), "M=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "A=M\n");
+		sprintf(asmInst + strlen(asmInst), "A=M\n");
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 	}
 	else if(strcmp(inst->type, "C_CALL") == 0){
