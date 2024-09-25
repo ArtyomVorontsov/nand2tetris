@@ -33,31 +33,31 @@ int main(int argc, char **argv){
 	fprintf(dfp, "%s", "@SP\n");
 	fprintf(dfp, "%s", "M=D\n");
 
-	fprintf(dfp, "%s", "@2000\n");
+	fprintf(dfp, "%s", "@0\n");
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@LCL\n");
 	fprintf(dfp, "%s", "M=D\n");
 	fprintf(dfp, "%s", "\n");
 
-	fprintf(dfp, "%s", "@3000\n");
+	fprintf(dfp, "%s", "@0\n");
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@TEMP\n");
 	fprintf(dfp, "%s", "M=D\n");
 	fprintf(dfp, "%s", "\n");
 
-	fprintf(dfp, "%s", "@4000\n");
+	fprintf(dfp, "%s", "@0\n");
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@ARG\n");
 	fprintf(dfp, "%s", "M=D\n");
 	fprintf(dfp, "%s", "\n");
 
-	fprintf(dfp, "%s", "@5000\n");
+	fprintf(dfp, "%s", "@0\n");
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@THIS\n");
 	fprintf(dfp, "%s", "M=D\n");
 	fprintf(dfp, "%s", "\n");
 
-	fprintf(dfp, "%s", "@6000\n");
+	fprintf(dfp, "%s", "@0\n");
 	fprintf(dfp, "%s", "D=A\n");
 	fprintf(dfp, "%s", "@THAT\n");
 	fprintf(dfp, "%s", "M=D\n");

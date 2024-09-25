@@ -329,8 +329,13 @@ char *codeWriter(struct VmInst *inst){
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 	}
 	else if(strcmp(inst->type, "C_IF_GOTO") == 0){
-		sprintf(asmInst + strlen(asmInst), "@SP\n");
+	/*	sprintf(asmInst + strlen(asmInst), "@SP\n");
 		sprintf(asmInst + strlen(asmInst), "A=M-1\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n"); */
+
+
+		genPopFromTheStackIntoR13Register(asmInst);
+		sprintf(asmInst + strlen(asmInst), "@R13\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileName);
 		sprintf(asmInst + strlen(asmInst), "D;JNE\n");
@@ -351,6 +356,13 @@ char *codeWriter(struct VmInst *inst){
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
 		sprintf(asmInst + strlen(asmInst), "@R14\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
+
+
+		sprintf(asmInst + strlen(asmInst), "// Save SP value for function which invoked that function\n");
+		sprintf(asmInst + strlen(asmInst), "@ARG\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		sprintf(asmInst + strlen(asmInst), "@R15\n");
 		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
 		sprintf(asmInst + strlen(asmInst), "// Put saved memory segment values back\n");
@@ -381,6 +393,12 @@ char *codeWriter(struct VmInst *inst){
 		
 		sprintf(asmInst + strlen(asmInst), "// Jump to return label\n");
 		genPopFromTheStackIntoR13Register(asmInst);
+
+		sprintf(asmInst + strlen(asmInst), "// Set old SP value\n");
+		sprintf(asmInst + strlen(asmInst), "@R15\n");
+		sprintf(asmInst + strlen(asmInst), "D=M\n");
+		sprintf(asmInst + strlen(asmInst), "@SP\n");
+		sprintf(asmInst + strlen(asmInst), "M=D\n");
 
 		sprintf(asmInst + strlen(asmInst), "// Push function return value on the stack\n");
 		sprintf(asmInst + strlen(asmInst), "@R14\n");
