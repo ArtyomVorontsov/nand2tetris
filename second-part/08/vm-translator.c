@@ -1,9 +1,9 @@
 #include "./vm-translator.h"
 
 char * SourceFileName;
+char * SourceFileNameWithoutExt;
 /*TODO:
  * Add support for multifile compilation 
- * Add support for functions
  */
 char *functionNameCtx;
 
@@ -15,7 +15,10 @@ int main(int argc, char **argv){
 	functionInvocationsTable = malloc(sizeof(struct AmountOfInvocations *) * 1000);
 	SourceFileName = *(argv + 1);
 	char *fileNameWithoutExtension = getFileNameWithoutExtension(SourceFileName);
-	char *destFileName = strcat(fileNameWithoutExtension, ".asm");
+	SourceFileNameWithoutExt = fileNameWithoutExtension;
+	char *destFileName = malloc(sizeof(char) * strlen(fileNameWithoutExtension) + 5);
+	strcpy(destFileName, fileNameWithoutExtension);
+	destFileName = strcat(destFileName, ".asm");
 	const int MAX_LINE_SIZE = 1000;
 	FILE *sfp, *dfp;
 	char line[MAX_LINE_SIZE];
@@ -63,7 +66,7 @@ int main(int argc, char **argv){
 	fprintf(dfp, "%s", "M=D\n");
 	fprintf(dfp, "%s", "\n");
 
-	fprintf(dfp, "@init.%s\n", SourceFileName);
+	fprintf(dfp, "@init.%s\n", SourceFileNameWithoutExt);
 	fprintf(dfp, "0;JMP\n");
 	fprintf(dfp, "%s", "\n");
 
@@ -104,17 +107,22 @@ char *getFileNameWithoutExtension(char *fileName){
 	char *fnp = fileName + fileNameLength;
 	bool extensionPassed = false;
 
-	while(*(fnp - i) != '/' && i <= fileNameLength){
+	while(i <= fileNameLength){
+		if(*fnp == '/'){
+			break;
+		}
+
 		if(extensionPassed){
-			*(fileNameWithoutExtension + j) = *(fnp - i);
+			*(fileNameWithoutExtension + j) = *fnp;
 			j++;
 		}
 
-		if(*(fnp - i) == '.'){
+		if(*fnp  == '.'){
 			extensionPassed = true;
 		}
 
 		i++;
+		fnp--;
 	}
 
 	fileNameWithoutExtension[i] = '\0';

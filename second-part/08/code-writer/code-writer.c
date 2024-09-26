@@ -1,5 +1,6 @@
 #include "./code-writer.h"
 
+extern char *SourceFileNameWithoutExt;
 extern char *SourceFileName;
 extern struct AmountOfInvocations *functionInvocationsTable; 
 extern char *functionNameCtx;
@@ -61,7 +62,7 @@ char *codeWriter(struct VmInst *inst){
 			sprintf(asmInst + strlen(asmInst), "D=M\n");
 		}
 		else if(strcmp(inst->arg1, "static") == 0){
-			sprintf(asmInst + strlen(asmInst), "@%s.%s\n", SourceFileName, inst->arg2);
+			sprintf(asmInst + strlen(asmInst), "@%s.%s\n", SourceFileNameWithoutExt, inst->arg2);
 			sprintf(asmInst + strlen(asmInst), "D=M\n");
 		}
 		else if(strcmp(inst->arg1, "argument") == 0){
@@ -161,7 +162,7 @@ char *codeWriter(struct VmInst *inst){
 		else if(strcmp(inst->arg1, "static") == 0){
 			sprintf(asmInst + strlen(asmInst), "@R13\n");
 			sprintf(asmInst + strlen(asmInst), "D=M\n");
-			sprintf(asmInst + strlen(asmInst), "@%s.%s\n", SourceFileName,inst->arg2);
+			sprintf(asmInst + strlen(asmInst), "@%s.%s\n", SourceFileNameWithoutExt,inst->arg2);
 			sprintf(asmInst + strlen(asmInst), "M=D\n");
 		}
 		else if(strcmp(inst->arg1, "argument") == 0){
@@ -245,14 +246,14 @@ char *codeWriter(struct VmInst *inst){
 			sprintf(asmInst + strlen(asmInst), "D=M\n");
 			sprintf(asmInst + strlen(asmInst), "@R14\n");
 			sprintf(asmInst + strlen(asmInst), "D=D-M\n");
-			sprintf(asmInst + strlen(asmInst), "@NEQ.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "@NEQ.%s.%d\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "D;JNE\n");
 			sprintf(asmInst + strlen(asmInst), "D=1\n");
-			sprintf(asmInst + strlen(asmInst), "@EQ.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "@EQ.%s.%d\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "0;JMP\n");
-			sprintf(asmInst + strlen(asmInst), "(NEQ.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "(NEQ.%s.%d)\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "D=0\n");
-			sprintf(asmInst + strlen(asmInst), "(EQ.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "(EQ.%s.%d)\n", SourceFileNameWithoutExt, inst->line);
 
 			genPushOnTheStackDRegister(asmInst);
 		}
@@ -268,14 +269,14 @@ char *codeWriter(struct VmInst *inst){
 			sprintf(asmInst + strlen(asmInst), "D=M\n");
 			sprintf(asmInst + strlen(asmInst), "@R14\n");
 			sprintf(asmInst + strlen(asmInst), "D=D-M\n");
-			sprintf(asmInst + strlen(asmInst), "@GT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "@GT.%s.%d\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "D;JGT\n");
 			sprintf(asmInst + strlen(asmInst), "D=0\n");
-			sprintf(asmInst + strlen(asmInst), "@NGT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "@NGT.%s.%d\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "0;JMP\n");
-			sprintf(asmInst + strlen(asmInst), "(GT.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "(GT.%s.%d)\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "D=1\n");
-			sprintf(asmInst + strlen(asmInst), "(NGT.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "(NGT.%s.%d)\n", SourceFileNameWithoutExt, inst->line);
 
 			genPushOnTheStackDRegister(asmInst);
 		}
@@ -291,14 +292,14 @@ char *codeWriter(struct VmInst *inst){
 			sprintf(asmInst + strlen(asmInst), "D=M\n");
 			sprintf(asmInst + strlen(asmInst), "@R14\n");
 			sprintf(asmInst + strlen(asmInst), "D=D-M\n");
-			sprintf(asmInst + strlen(asmInst), "@LT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "@LT.%s.%d\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "D;JLT\n");
 			sprintf(asmInst + strlen(asmInst), "D=0\n");
-			sprintf(asmInst + strlen(asmInst), "@NLT.%s.%d\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "@NLT.%s.%d\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "0;JMP\n");
-			sprintf(asmInst + strlen(asmInst), "(LT.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "(LT.%s.%d)\n", SourceFileNameWithoutExt, inst->line);
 			sprintf(asmInst + strlen(asmInst), "D=1\n");
-			sprintf(asmInst + strlen(asmInst), "(NLT.%s.%d)\n", SourceFileName, inst->line);
+			sprintf(asmInst + strlen(asmInst), "(NLT.%s.%d)\n", SourceFileNameWithoutExt, inst->line);
 
 			genPushOnTheStackDRegister(asmInst);
 		}
@@ -325,27 +326,22 @@ char *codeWriter(struct VmInst *inst){
 		}
 	} 
 	else if(strcmp(inst->type, "C_GOTO") == 0){
-		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileNameWithoutExt);
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 	}
 	else if(strcmp(inst->type, "C_IF_GOTO") == 0){
-	/*	sprintf(asmInst + strlen(asmInst), "@SP\n");
-		sprintf(asmInst + strlen(asmInst), "A=M-1\n");
-		sprintf(asmInst + strlen(asmInst), "D=M\n"); */
-
-
 		genPopFromTheStackIntoR13Register(asmInst);
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
-		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileNameWithoutExt);
 		sprintf(asmInst + strlen(asmInst), "D;JNE\n");
 	}
 	else if(strcmp(inst->type, "LABEL") == 0){
-		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileNameWithoutExt);
 
 	}
 	else if(strcmp(inst->type, "C_FUNCTION") == 0){
-		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileNameWithoutExt);
 		functionNameCtx = inst->arg1;
 	}
 	else if(strcmp(inst->type, "C_RETURN") == 0){
@@ -458,7 +454,7 @@ char *codeWriter(struct VmInst *inst){
 
 
 		sprintf(asmInst + strlen(asmInst), "// JMP to function body code\n");
-		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileName);
+		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileNameWithoutExt);
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 
 		sprintf(asmInst + strlen(asmInst), "(%s$ret.%d)\n", inst->arg1, functionInvocation->invocationAmount);
