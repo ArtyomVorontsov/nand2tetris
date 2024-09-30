@@ -13,62 +13,80 @@ int functionInvocationsTableLength = 0;
 int main(int argc, char **argv){
 	functionNameCtx = malloc(sizeof(char) * 1000);
 	functionInvocationsTable = malloc(sizeof(struct AmountOfInvocations *) * 1000);
-	SourceFileName = *(argv + 1);
-	char *fileNameWithoutExtension = getFileNameWithoutExtension(SourceFileName);
-	SourceFileNameWithoutExt = fileNameWithoutExtension;
-	char *destFileName = malloc(sizeof(char) * strlen(fileNameWithoutExtension) + 5);
-	strcpy(destFileName, fileNameWithoutExtension);
-	destFileName = strcat(destFileName, ".asm");
+	char *filePath = *(argv + 1);
+	char *destFileName;
+	char *tempFileName;
+	char *tempFileNameWithoutExtension;
 	const int MAX_LINE_SIZE = 1000;
 	FILE *sfp, *dfp;
 	char line[MAX_LINE_SIZE];
 	struct VmInst *vmInst;
 	char *asmInst;
-
-	sfp = fopen(SourceFileName, "r");
-	dfp= fopen(destFileName, "w");
-
 	int i = 0;
 
-	// static linkage to memory addresses, will be improved in chapter 8
-	fprintf(dfp, "%s", "@256\n");
-	fprintf(dfp, "%s", "D=A\n");
-	fprintf(dfp, "%s", "@SP\n");
-	fprintf(dfp, "%s", "M=D\n");
+	/* directory handling */
+	DIR *dirP = opendir(filePath);
+	struct dirent *dir;
+	bool argumentIsDirectory = dirP != NULL;
 
-	fprintf(dfp, "%s", "@0\n");
-	fprintf(dfp, "%s", "D=A\n");
-	fprintf(dfp, "%s", "@LCL\n");
-	fprintf(dfp, "%s", "M=D\n");
-	fprintf(dfp, "%s", "\n");
+	destFileName = getDestFileName(filePath);
 
-	fprintf(dfp, "%s", "@0\n");
-	fprintf(dfp, "%s", "D=A\n");
-	fprintf(dfp, "%s", "@TEMP\n");
-	fprintf(dfp, "%s", "M=D\n");
-	fprintf(dfp, "%s", "\n");
+	dfp = fopen(destFileName, "w");
+	writeInitialCode(dfp);
+	fclose(dfp);
 
-	fprintf(dfp, "%s", "@0\n");
-	fprintf(dfp, "%s", "D=A\n");
-	fprintf(dfp, "%s", "@ARG\n");
-	fprintf(dfp, "%s", "M=D\n");
-	fprintf(dfp, "%s", "\n");
+	if(argumentIsDirectory) {
+		while((dir = readdir(dirP)) != NULL){
+			tempFileName = malloc(sizeof(char) * 200);
 
-	fprintf(dfp, "%s", "@0\n");
-	fprintf(dfp, "%s", "D=A\n");
-	fprintf(dfp, "%s", "@THIS\n");
-	fprintf(dfp, "%s", "M=D\n");
-	fprintf(dfp, "%s", "\n");
+			if(dir->d_type != DT_DIR){
+				*tempFileName = '\0';
+				strcpy(tempFileName, filePath);
+				strcat(tempFileName, "/");
+				strcat(tempFileName, dir->d_name);
+				SourceFileName = tempFileName;
+				SourceFileNameWithoutExt = getFileNameWithoutExtension(tempFileName);
 
-	fprintf(dfp, "%s", "@0\n");
-	fprintf(dfp, "%s", "D=A\n");
-	fprintf(dfp, "%s", "@THAT\n");
-	fprintf(dfp, "%s", "M=D\n");
-	fprintf(dfp, "%s", "\n");
+				sfp = fopen(tempFileName, "r");
+				dfp= fopen(destFileName, "a");
+				
+				fprintf(dfp, "\n// NEW FILE %s STARTED\n\n", dir->d_name);
+				translateToAsm(sfp, dfp);
+				fclose(sfp);
+			}
+		}
 
-	fprintf(dfp, "@init.%s\n", SourceFileNameWithoutExt);
+		SourceFileName = tempFileName;
+		SourceFileNameWithoutExt = getFileNameWithoutExtension(tempFileName);
+
+		fclose(dfp);
+	}
+	else {
+		SourceFileName = filePath;
+		SourceFileNameWithoutExt = getFileNameWithoutExtension(filePath);
+		sfp = fopen(SourceFileName, "r");
+		dfp = fopen(destFileName, "w");
+		translateToAsm(sfp, dfp);
+		fclose(sfp);
+		fclose(dfp);
+	}
+
+	sfp = fopen(SourceFileName, "r");
+	dfp = fopen(destFileName, "a");
+
+	fprintf(dfp, "(EOF_LOOP)\n");
+	fprintf(dfp, "@EOF_LOOP\n");
 	fprintf(dfp, "0;JMP\n");
-	fprintf(dfp, "%s", "\n");
+
+	fclose(dfp);
+}
+
+void translateToAsm(FILE *sfp, FILE *dfp){
+	const int MAX_LINE_SIZE = 1000;
+	char line[MAX_LINE_SIZE];
+	int i = 0;
+	struct VmInst *vmInst;
+	char *asmInst;
 
 	while(1){
 		fgets(line, MAX_LINE_SIZE, sfp);
@@ -85,20 +103,43 @@ int main(int argc, char **argv){
 
 
 		asmInst = codeWriter(vmInst);
-		// printf("asmInst: %s\n\n", asmInst);
 
 		fprintf(dfp, "%s", asmInst);
 		i++;
 	}
-
-
-	fprintf(dfp, "(EOF_LOOP)\n");
-	fprintf(dfp, "@EOF_LOOP\n");
-	fprintf(dfp, "0;JMP\n");
-
-	fclose(sfp);
-	fclose(dfp);
 }
+
+char *getFileName(char *path){
+	int i = 0;
+	int pathLength = strlen(path);
+	char *fileName = malloc(sizeof(char) * pathLength);
+	char *fnp = path + pathLength - 1;
+
+	while(i <= pathLength){
+		if(*fnp == '/'){
+			break;
+		}
+		*(fileName + i) = *fnp;
+		i++;
+		fnp--;
+	}
+
+	fileName[i] = '\0';
+
+	int fileNameLength = strlen(fileName);
+	char *fileNameReversed = malloc(sizeof(char) * fileNameLength);
+	
+	for(int i = 0; i < fileNameLength; i++)
+	        fileNameReversed[i] = fileName[fileNameLength - i - 1];
+
+	fileNameReversed[fileNameLength] = '\0';
+
+	free(fileName);
+	return fileNameReversed;
+}
+
+
+
 
 char *getFileNameWithoutExtension(char *fileName){
 	int i = 0, j = 0;
@@ -125,7 +166,7 @@ char *getFileNameWithoutExtension(char *fileName){
 		fnp--;
 	}
 
-	fileNameWithoutExtension[i] = '\0';
+	fileNameWithoutExtension[j] = '\0';
 
 	int fileNameWithoutExtensionLength = strlen(fileNameWithoutExtension);
 	char *fileNameWithoutExtensionReversed = malloc(sizeof(char) * fileNameWithoutExtensionLength);
@@ -166,3 +207,73 @@ struct AmountOfInvocations *getFunctionInvocation(char *fnName){
 
 	return functionInvocation;
 }
+
+char *getDestFileName(char *filePath){
+	DIR *dirP = opendir(filePath);
+	struct dirent *dir;
+	bool argumentIsDirectory = dirP != NULL;
+	char *destFileName;
+
+	if(argumentIsDirectory){
+		int pathLength = strlen(filePath);
+
+		if(filePath[pathLength - 1] == '/'){
+			filePath[pathLength - 1] = '\0';
+		}
+
+		destFileName = getFileName(filePath);
+		strcat(destFileName, ".asm");
+	} else {
+		SourceFileName = getFileName(filePath);
+		SourceFileNameWithoutExt = getFileNameWithoutExtension(SourceFileName);
+
+		/* Assign value to variable which holds destination filename */
+		strcpy(destFileName, SourceFileNameWithoutExt);
+		strcat(destFileName, ".asm");
+	}
+
+	return destFileName;
+}
+
+void writeInitialCode(FILE *dfp){
+	// static linkage to memory addresses, will be improved in chapter 8
+	fprintf(dfp, "%s", "@256\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@SP\n");
+	fprintf(dfp, "%s", "M=D\n");
+
+	fprintf(dfp, "%s", "@0\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@LCL\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "%s", "@0\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@TEMP\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "%s", "@0\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@ARG\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "%s", "@0\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@THIS\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "%s", "@0\n");
+	fprintf(dfp, "%s", "D=A\n");
+	fprintf(dfp, "%s", "@THAT\n");
+	fprintf(dfp, "%s", "M=D\n");
+	fprintf(dfp, "%s", "\n");
+
+	fprintf(dfp, "@Sys.init\n");
+	fprintf(dfp, "0;JMP\n");
+	fprintf(dfp, "%s", "\n");
+}
+

@@ -2,10 +2,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 
 
 char *getFileNameWithoutExtension(char *fileName);
+char *getFileName(char *path);
 
 struct VmInst {
 	char *type;
@@ -25,3 +27,7 @@ struct AmountOfInvocations {
 
 void addFunctionInvocation(char *fnName);
 struct AmountOfInvocations *getFunctionInvocation(char *fnName);
+
+void translateToAsm(FILE *sfp, FILE *dfp);
+char *getDestFileName(char *filePath);
+void writeInitialCode(FILE *dfp);

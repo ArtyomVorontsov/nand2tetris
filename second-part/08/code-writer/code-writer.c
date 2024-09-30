@@ -326,22 +326,22 @@ char *codeWriter(struct VmInst *inst){
 		}
 	} 
 	else if(strcmp(inst->type, "C_GOTO") == 0){
-		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileNameWithoutExt);
+		sprintf(asmInst + strlen(asmInst), "@%s\n", inst->arg1);
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 	}
 	else if(strcmp(inst->type, "C_IF_GOTO") == 0){
 		genPopFromTheStackIntoR13Register(asmInst);
 		sprintf(asmInst + strlen(asmInst), "@R13\n");
 		sprintf(asmInst + strlen(asmInst), "D=M\n");
-		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileNameWithoutExt);
+		sprintf(asmInst + strlen(asmInst), "@%s\n", inst->arg1);
 		sprintf(asmInst + strlen(asmInst), "D;JNE\n");
 	}
 	else if(strcmp(inst->type, "LABEL") == 0){
-		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileNameWithoutExt);
+		sprintf(asmInst + strlen(asmInst), "(%s)\n", inst->arg1);
 
 	}
 	else if(strcmp(inst->type, "C_FUNCTION") == 0){
-		sprintf(asmInst + strlen(asmInst), "(%s.%s)\n", inst->arg1, SourceFileNameWithoutExt);
+		sprintf(asmInst + strlen(asmInst), "(%s)\n", inst->arg1);
 		functionNameCtx = inst->arg1;
 	}
 	else if(strcmp(inst->type, "C_RETURN") == 0){
@@ -454,7 +454,7 @@ char *codeWriter(struct VmInst *inst){
 
 
 		sprintf(asmInst + strlen(asmInst), "// JMP to function body code\n");
-		sprintf(asmInst + strlen(asmInst), "@%s.%s\n", inst->arg1, SourceFileNameWithoutExt);
+		sprintf(asmInst + strlen(asmInst), "@%s\n", inst->arg1);
 		sprintf(asmInst + strlen(asmInst), "0;JMP\n");
 
 		sprintf(asmInst + strlen(asmInst), "(%s$ret.%d)\n", inst->arg1, functionInvocation->invocationAmount);
