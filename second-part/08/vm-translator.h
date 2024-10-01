@@ -30,4 +30,6 @@ struct AmountOfInvocations *getFunctionInvocation(char *fnName);
 
 void translateToAsm(FILE *sfp, FILE *dfp);
 char *getDestFileName(char *filePath);
-void writeInitialCode(FILE *dfp);
+void generateInitCode(FILE *dfp);
+void generateEOFCode(FILE *dfp);
+void generateAsmFromDirectoryFiles(DIR *dirP, char *filePath, FILE *dfp);

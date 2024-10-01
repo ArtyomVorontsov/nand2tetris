@@ -2,9 +2,6 @@
 
 char * SourceFileName;
 char * SourceFileNameWithoutExt;
-/*TODO:
- * Add support for multifile compilation 
- */
 char *functionNameCtx;
 
 struct AmountOfInvocations **functionInvocationsTable;
@@ -15,69 +12,41 @@ int main(int argc, char **argv){
 	functionInvocationsTable = malloc(sizeof(struct AmountOfInvocations *) * 1000);
 	char *filePath = *(argv + 1);
 	char *destFileName;
-	char *tempFileName;
-	char *tempFileNameWithoutExtension;
 	const int MAX_LINE_SIZE = 1000;
 	FILE *sfp, *dfp;
 	char line[MAX_LINE_SIZE];
 	struct VmInst *vmInst;
 	char *asmInst;
 	int i = 0;
-
-	/* directory handling */
 	DIR *dirP = opendir(filePath);
 	struct dirent *dir;
 	bool argumentIsDirectory = dirP != NULL;
 
 	destFileName = getDestFileName(filePath);
-
 	dfp = fopen(destFileName, "w");
-	writeInitialCode(dfp);
+	generateInitCode(dfp);
 	fclose(dfp);
 
 	if(argumentIsDirectory) {
-		while((dir = readdir(dirP)) != NULL){
-			tempFileName = malloc(sizeof(char) * 200);
-
-			if(dir->d_type != DT_DIR){
-				*tempFileName = '\0';
-				strcpy(tempFileName, filePath);
-				strcat(tempFileName, "/");
-				strcat(tempFileName, dir->d_name);
-				SourceFileName = tempFileName;
-				SourceFileNameWithoutExt = getFileNameWithoutExtension(tempFileName);
-
-				sfp = fopen(tempFileName, "r");
-				dfp= fopen(destFileName, "a");
-				
-				fprintf(dfp, "\n// NEW FILE %s STARTED\n\n", dir->d_name);
-				translateToAsm(sfp, dfp);
-				fclose(sfp);
-			}
-		}
-
-		SourceFileName = tempFileName;
-		SourceFileNameWithoutExt = getFileNameWithoutExtension(tempFileName);
-
+		// If directory as argument is provided
+		dfp = fopen(destFileName, "a");
+		generateAsmFromDirectoryFiles(dirP, filePath, dfp);
 		fclose(dfp);
 	}
 	else {
+		// If file as argument is provided
 		SourceFileName = filePath;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(filePath);
+
 		sfp = fopen(SourceFileName, "r");
-		dfp = fopen(destFileName, "w");
+		dfp = fopen(destFileName, "a");
 		translateToAsm(sfp, dfp);
 		fclose(sfp);
 		fclose(dfp);
 	}
 
-	sfp = fopen(SourceFileName, "r");
 	dfp = fopen(destFileName, "a");
-
-	fprintf(dfp, "(EOF_LOOP)\n");
-	fprintf(dfp, "@EOF_LOOP\n");
-	fprintf(dfp, "0;JMP\n");
-
+	generateEOFCode(dfp);
 	fclose(dfp);
 }
 
@@ -228,6 +197,7 @@ char *getDestFileName(char *filePath){
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(SourceFileName);
 
 		/* Assign value to variable which holds destination filename */
+		destFileName  = malloc(sizeof(char) * (strlen(SourceFileNameWithoutExt) + 5));
 		strcpy(destFileName, SourceFileNameWithoutExt);
 		strcat(destFileName, ".asm");
 	}
@@ -235,7 +205,7 @@ char *getDestFileName(char *filePath){
 	return destFileName;
 }
 
-void writeInitialCode(FILE *dfp){
+void generateInitCode(FILE *dfp){
 	// static linkage to memory addresses, will be improved in chapter 8
 	fprintf(dfp, "%s", "@256\n");
 	fprintf(dfp, "%s", "D=A\n");
@@ -275,5 +245,40 @@ void writeInitialCode(FILE *dfp){
 	fprintf(dfp, "@Sys.init\n");
 	fprintf(dfp, "0;JMP\n");
 	fprintf(dfp, "%s", "\n");
+}
+
+void generateEOFCode(FILE *dfp){
+	fprintf(dfp, "(EOF_LOOP)\n");
+	fprintf(dfp, "@EOF_LOOP\n");
+	fprintf(dfp, "0;JMP\n");
+}
+
+void generateAsmFromDirectoryFiles(DIR *dirP, char *filePath, FILE *dfp){
+	char *tempFileName;
+	FILE *sfp;
+	struct dirent *dir;
+
+	while((dir = readdir(dirP)) != NULL){
+		tempFileName = malloc(sizeof(char) * 200);
+
+		if(dir->d_type != DT_DIR){
+			*tempFileName = '\0';
+			strcpy(tempFileName, filePath);
+			strcat(tempFileName, "/");
+			strcat(tempFileName, dir->d_name);
+			SourceFileName = tempFileName;
+			SourceFileNameWithoutExt = getFileNameWithoutExtension(tempFileName);
+
+			sfp = fopen(tempFileName, "r");
+			
+			fprintf(dfp, "\n// NEW FILE %s STARTED\n\n", dir->d_name);
+			translateToAsm(sfp, dfp);
+			fclose(sfp);
+		}
+	}
+
+	SourceFileName = tempFileName;
+	SourceFileNameWithoutExt = getFileNameWithoutExtension(tempFileName);
+
 }
 
