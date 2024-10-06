@@ -1,0 +1,69 @@
+class Wall {
+	field Array walls;
+	field int wallsAmount;
+	
+	constructor Wall new(){
+		let walls = Array.new(100);
+		let wallsAmount = 0;
+
+		return this;
+	}
+
+	method void draw(int x, int y, int size){
+		do Screen.drawRectangle(x, y, x + size, y + size);
+
+		return;
+	}
+
+	method void drawWalls(){
+		var int i;
+		var int x;
+
+		let i = 0;
+
+		while(i < wallsAmount){
+			let walls[i] = walls[i] - 1;
+
+			do draw(walls[i], 220, 30);
+			if(walls[i] = 0){
+				do removeWall(i);
+			}
+
+			let i = i + 1;
+		}
+
+		return;
+	}
+
+	method void spawnWall(){
+		let walls[wallsAmount] = 480;
+		let wallsAmount = wallsAmount + 1;
+
+		return;
+	}
+
+	method void removeWall(int x){
+		var Array newWalls;
+		var int i;
+		var int y;
+		let newWalls = Array.new(100);
+		let i = 0;
+		let y = 0;
+
+		while(i < wallsAmount){
+
+			if(~(i = x)){
+				let newWalls[y] = walls[i];	
+				let y = y + 1;		
+			}
+
+			let i = i + 1;
+		}
+
+		let wallsAmount = y;
+		let walls = newWalls;
+
+		return;
+	}
+
+}

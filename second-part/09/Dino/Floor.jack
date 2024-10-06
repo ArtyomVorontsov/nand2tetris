@@ -1,0 +1,16 @@
+class Floor {
+	
+	field Floor floor;
+	
+	constructor Floor main(){
+		return this;
+	}
+
+	function void draw(){
+		do Screen.setColor(true);
+		do Screen.drawRectangle(0, 240, 510, 254);
+
+		return;
+	}
+
+}

@@ -11,11 +11,17 @@ class Dino {
 	}
 
 	method void run(){
-		let proceed = true;
+		var Wall wall;
+		let wall = Wall.new();
+		let proceed = true;	
+
+		do wall.spawnWall();
 		
 		while(proceed){
 			do bednij.draw(6720);
-			do Sys.wait(10);
+			do wall.drawWalls();
+			do Floor.draw();
+			do Sys.wait(5);
 			do Screen.clearScreen();
 		}
 		
