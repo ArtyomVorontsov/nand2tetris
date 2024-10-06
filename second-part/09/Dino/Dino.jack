@@ -1,0 +1,28 @@
+
+class Dino {
+
+	field Bednij bednij;
+	field boolean proceed;
+
+	constructor Dino new() {
+		let bednij = Bednij.new();
+
+		return this;
+	}
+
+	method void run(){
+		let proceed = true;
+		
+		while(proceed){
+			do bednij.draw(6720);
+			do Sys.wait(10);
+			do Screen.clearScreen();
+		}
+		
+		return;
+	}
+
+
+
+}
+

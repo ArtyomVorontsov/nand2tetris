@@ -1,0 +1,13 @@
+class Main {
+
+
+	function void main(){
+		var Dino dino;
+		let dino = Dino.new();
+
+		do dino.run();
+
+		return;
+	}
+
+}
