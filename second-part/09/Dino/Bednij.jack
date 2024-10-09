@@ -3,10 +3,18 @@ class Bednij {
 	field char key;
 	field int jumpTime;
 	field int positionTime;
-
+	field int parabolaY;
+	field int parabolaX;
+	field int jumpPower;
+	field int maxJumpTime;
+	static int currentLocation;
 
 	constructor Bednij new(){
-
+		let jumpPower = 40;
+		let jumpTime = 50;
+		let parabolaY = 0;
+		let parabolaX = jumpTime * (-1);
+		let maxJumpTime = jumpTime;
 
 		return this;
 	}
@@ -18,38 +26,41 @@ class Bednij {
 		}
 
 		if(key = 32){
-			if(jumpTime > 25){
-				let location = location - (512 * (jumpTime / 10));
-			} 
-
-			if((jumpTime < 24) & (jumpTime < 40)) {
-				let location = location + (512 * ((jumpTime - 25) / 10));
-			}
+			let location = location + (32 * parabolaY);
 			
 			
-			let jumpTime  = jumpTime + 1;
+			let parabolaY = ((parabolaX * parabolaX) - (jumpTime * jumpTime)) / jumpPower;
+			let parabolaX = parabolaX + 1;
 
-			if(jumpTime = 50){
-				let jumpTime = 0;
+			if(parabolaX = maxJumpTime){
+				let parabolaX = jumpTime * (-1);
 				let key = 0;
 			}
 		}
 
 
-		if((positionTime < 2) ){
+		if((positionTime = 10) ){
+			do Bednij.clean();
 			do Bednij.drawPoza1(location);
 		} else  {
-			if(positionTime < 4){
+			if(positionTime = 20){
+				do Bednij.clean();
 				do Bednij.drawPoza2(location);
 			} else {
-				do Bednij.drawPoza2(location);
-				let positionTime = 0;
+				if(positionTime = 21){
+					let positionTime = 0;
+				}
 			}
 		}
 
 		let positionTime = positionTime + 1;
+		let currentLocation = location;
 
 		return;
+	}
+
+	function int getXCoordinate(){
+		return currentLocation;
 	}
 
 
@@ -125,8 +136,6 @@ class Bednij {
 		return;
 	}	
 
-
-
 	function void drawPoza2(int location) {
 		var int memAddress; 
 		let memAddress = 16384+location;
@@ -190,6 +199,13 @@ class Bednij {
 		do Memory.poke(memAddress +322, 15);
 		do Memory.poke(memAddress +354, 3);
 		do Memory.poke(memAddress +386, 1);
+		return;
+	}
+
+	function void clean() {
+		do Screen.setColor(false);
+		do Screen.drawRectangle(0, 120, 48, 240);
+
 		return;
 	}
 

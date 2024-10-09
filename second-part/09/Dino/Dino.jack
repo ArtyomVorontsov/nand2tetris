@@ -1,8 +1,9 @@
-
 class Dino {
 
 	field Bednij bednij;
 	field boolean proceed;
+	field int wallX;
+	field int bedniX;
 
 	constructor Dino new() {
 		let bednij = Bednij.new();
@@ -12,6 +13,8 @@ class Dino {
 
 	method void run(){
 		var Wall wall;
+		var int level;
+		let level = 1;
 		let wall = Wall.new();
 		let proceed = true;	
 
@@ -19,16 +22,18 @@ class Dino {
 		
 		while(proceed){
 			do bednij.draw(6720);
-			do wall.drawWalls();
+			do wall.generateWalls();
 			do Floor.draw();
+			let wallX = Wall.getFirstWallXCoordinate();
+			let bedniX = Bednij.getXCoordinate();
+
+			if((0 < wallX) & ((0 + 38) > wallX)){
+				let proceed = false;
+			}
 			do Sys.wait(5);
-			do Screen.clearScreen();
 		}
 		
 		return;
 	}
-
-
-
 }
 
