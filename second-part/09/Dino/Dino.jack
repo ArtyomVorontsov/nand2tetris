@@ -27,7 +27,7 @@ class Dino {
 			let wallX = Wall.getFirstWallXCoordinate();
 			let bedniX = Bednij.getXCoordinate();
 
-			if((0 < wallX) & ((0 + 38) > wallX)){
+			if((0 < wallX) & ((0 + 38) > wallX) & ((bedniX / 32) = 210)){
 				let proceed = false;
 			}
 			do Sys.wait(5);
