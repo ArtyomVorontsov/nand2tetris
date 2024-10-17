@@ -74,7 +74,9 @@ char * advance(FILE **sfp){
 			(c == '.') || 
 			(c == '(') || 
 			(c == ')') ||
-			(c == ';') 
+			(c == ';') ||
+			(c == ',') ||
+			(c == '~') 
 		){
 			break;
 		}
@@ -94,7 +96,9 @@ char * advance(FILE **sfp){
 			(c == '.') || 
 			(c == '(') || 
 			(c == ')') ||
-			(c == ';') 
+			(c == ';') ||
+			(c == ',') ||
+			(c == '~') 
 		){
 			if(j == 0){
 				*(token + j) = c;
@@ -113,6 +117,19 @@ char * advance(FILE **sfp){
 	if(initialPtrPosition == ftell(*sfp)){
 		// EOF
 		getc(*sfp);
+	}
+
+	if(strcmp("<", token) == 0){
+		strcpy(token, "&lt;");
+	}
+	else if(strcmp(">", token) == 0){
+		strcpy(token, "&gt;");
+	}
+	else if(strcmp("&", token) == 0){
+		strcpy(token, "&amp;");
+	}
+	else if(strcmp("\"", token) == 0){
+		strcpy(token, "&quot;");
 	}
 
 	return token;
@@ -161,7 +178,8 @@ bool isKeyword(char *token){
 	strcmp(token, "null") == 0 ||
 	strcmp(token, "this") == 0 ||
 	strcmp(token, "void") == 0 ||
-	strcmp(token, "var") == 0;
+	strcmp(token, "var") == 0 ||
+	strcmp(token, "char") == 0;
 }
 
 bool isSymbol(char *token){
@@ -179,11 +197,16 @@ bool isSymbol(char *token){
 	strcmp(token, "*") == 0 ||
 	strcmp(token, "/") == 0 ||
 	strcmp(token, "&") == 0 ||
+	strcmp(token, "&amp;") == 0 ||
 	strcmp(token, "|") == 0 ||
 	strcmp(token, "<") == 0 ||
+	strcmp(token, "&lt;") == 0 ||
 	strcmp(token, ">") == 0 ||
+	strcmp(token, "&gt;") == 0 ||
 	strcmp(token, "=") == 0 ||
-	strcmp(token, "~") == 0;
+	strcmp(token, "~") == 0 ||
+	strcmp(token, "\"") == 0 ||
+	strcmp(token, "&quot;") == 0;
 }
 
 bool isIdentifier(char *token){
@@ -193,8 +216,8 @@ bool isIdentifier(char *token){
 bool isVal(char *token){
 	int i = 0;
 
-	while(isdigit(token[i++])) i++;
-	return strlen(token) == i;
+	while(isdigit(token[i++]));
+	return strlen(token) == i - 1;
 }
 
 bool isStringVal(char *token){

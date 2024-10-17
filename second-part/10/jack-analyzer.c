@@ -17,10 +17,9 @@ int main(int argc, char **argv){
 	if(argumentIsDirectory) {
 		// If directory as argument is provided
 		compileDirectoryFiles(dirP, filePath);
-		fclose(dfp);
 	}
 	else {
-		destFileName = getDestFileName(filePath, "xml");
+		destFileName = getDestFileName(filePath, "T.xml");
 		// If file as argument is provided
 		SourceFileName = filePath;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(filePath);
@@ -81,6 +80,7 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 
 	while((dir = readdir(dirP)) != NULL){
 		sourceFileName = malloc(sizeof(char) * 200);
+		destFileName = malloc(sizeof(char) * 200);
 
 		if(dir->d_type != DT_DIR){
 
@@ -90,7 +90,11 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 			SourceFileName = sourceFileName;
 			SourceFileNameWithoutExt = getFileNameWithoutExtension(sourceFileName);
 
-			destFileName = getDestFileName(filePath, "xml");
+			strcpy(destFileName, filePath);
+			strcat(destFileName, "/");
+			strcat(destFileName, dir->d_name);
+
+			destFileName = getDestFileName(destFileName, "T.xml");
 
 			sfp = fopen(sourceFileName, "r");
 			dfp = fopen(destFileName, "a");
@@ -101,7 +105,7 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 	}
 }
 
-char *getDestFileName(char *filePath, char *ext){
+char *getDestFileName(char *filePath, char *postfix){
 	DIR *dirP = opendir(filePath);
 	struct dirent *dir;
 	bool argumentIsDirectory = dirP != NULL;
@@ -115,8 +119,7 @@ char *getDestFileName(char *filePath, char *ext){
 		}
 
 		destFileName = getFileName(filePath);
-		strcat(destFileName, ".");
-		strcat(destFileName, ext);
+		strcat(destFileName, postfix);
 	} else {
 		SourceFileName = getFileName(filePath);
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(SourceFileName);
@@ -124,8 +127,7 @@ char *getDestFileName(char *filePath, char *ext){
 		/* Assign value to variable which holds destination filename */
 		destFileName  = malloc(sizeof(char) * (strlen(SourceFileNameWithoutExt) + 5));
 		strcpy(destFileName, SourceFileNameWithoutExt);
-		strcat(destFileName, ".");
-		strcat(destFileName, ext);
+		strcat(destFileName, postfix);
 	}
 
 	return destFileName;
