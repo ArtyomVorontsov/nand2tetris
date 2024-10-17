@@ -10,6 +10,7 @@ void tokenize(FILE *sfp, FILE *dfp){
 	int tokenLength = 0;
 	enum TOKEN_TYPE typeOfToken; 
 
+	fprintf(dfp,"<tokens>\n");
 	while(1){
 		if(hasMoreTokens(sfp)) {
 			token = advance(&sfp);
@@ -17,27 +18,27 @@ void tokenize(FILE *sfp, FILE *dfp){
 
 			switch(typeOfToken){
 				case UNKNOWN:
-					fprintf(dfp, "<unknown>%s</uknown>\n", token);
+					fprintf(dfp, "<unknown> %s </uknown>\n", token);
 					break;
 				case KEYWORD:
-					fprintf(dfp, "<keyword>%s</keyword>\n", token);
+					fprintf(dfp, "<keyword> %s </keyword>\n", token);
 					break;
 				case SYMBOL:
-					fprintf(dfp, "<symbol>%s</symbol>\n", token);
+					fprintf(dfp, "<symbol> %s </symbol>\n", token);
 					break;
 				case IDENTIFIER:
-					fprintf(dfp, "<identifier>%s</identifier>\n", token);
+					fprintf(dfp, "<identifier> %s </identifier>\n", token);
 					break;
 				case INT_CONST:
-					fprintf(dfp, "<integerConstant>%s</integerConstant>\n", token);
+					fprintf(dfp, "<integerConstant> %s </integerConstant>\n", token);
 					break;
 				case STRING_CONST:
-					fprintf(dfp, "<stringConstant>%s</stringConstant>\n", token);
+					fprintf(dfp, "<stringConstant> %s </stringConstant>\n", token);
 					break;
 				case BLANK:
 					break;
 				default:
-					fprintf(dfp, "<unknown>%s</uknown>\n", token);
+					fprintf(dfp, "<unknown> %s </uknown>\n", token);
 					break;
 			}
 
@@ -47,6 +48,7 @@ void tokenize(FILE *sfp, FILE *dfp){
 		}
 
 	}
+	fprintf(dfp,"</tokens>\n");
 }
 
 bool hasMoreTokens(FILE *sfp){
@@ -75,20 +77,40 @@ char * advance(FILE **sfp){
 			break;
 		}
 	}
+	fseek(*sfp, -i, SEEK_CUR);
 
-	fseek(*sfp, -(i), SEEK_CUR);
 	token = malloc(sizeof(char) * (i + 1));
 
-	for(j = 0; j < i ; j++){
+	while(true){
 		c = getc(*sfp);
-		if((j) < i - 1){
-			*(token + j) = c;
+		if(
+			(c == ' ') || 
+			(c == '\n') || 
+			(c == '\t') || 
+			(c == '\0') || 
+			(c == -1) || 
+			(c == '.') || 
+			(c == '(') || 
+			(c == ')') ||
+			(c == ';') 
+		){
+			if(j == 0){
+				*(token + j) = c;
+				j++;
+			} else {
+				fseek(*sfp, -1, SEEK_CUR);
+			}
+			break;
 		}
+		*(token + j) = c;
+		j++;
 	}
 
+	token[j] = '\0';
+
 	if(initialPtrPosition == ftell(*sfp)){
-		c = getc(*sfp);
-		token[0] = c;
+		// EOF
+		getc(*sfp);
 	}
 
 	return token;
@@ -99,6 +121,9 @@ enum TOKEN_TYPE tokenType(char *token){
 	if(isKeyword(token)){
 		return KEYWORD;
 	} 
+	else if(isBlank(token)){
+		return BLANK;
+	}
 	else if(isSymbol(token)){
 		return SYMBOL;
 	}
@@ -107,9 +132,6 @@ enum TOKEN_TYPE tokenType(char *token){
 	} 
 	else if(isStringVal(token)){
 		return STRING_CONST;
-	}
-	else if(isBlank(token)){
-		return BLANK;
 	}
 	else if(isIdentifier(token)){
 		return IDENTIFIER;
@@ -135,7 +157,9 @@ bool isKeyword(char *token){
 	strcmp(token, "true") == 0 ||
 	strcmp(token, "false") == 0 ||
 	strcmp(token, "null") == 0 ||
-	strcmp(token, "this") == 0;
+	strcmp(token, "this") == 0 ||
+	strcmp(token, "void") == 0 ||
+	strcmp(token, "var") == 0;
 }
 
 bool isSymbol(char *token){
