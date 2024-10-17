@@ -60,6 +60,8 @@ char * advance(FILE **sfp){
 	int i = 0, j = 0, initialPtrPosition = ftell(*sfp);
 	char *token;
 
+	skipComments(sfp);
+
 	while(true){
 		c = getc(*sfp);
 		i++;
@@ -209,5 +211,49 @@ bool isBlank(char *token){
 	char c = token[0];
 
 	return (c == ' ') || (c == '\n') || (c == '\t') || (c == '\0') || (c == -1);
+}
+
+void skipComments(FILE **sfp){
+	// Skip comments
+	while(getc(*sfp) == '/'){
+		fseek(*sfp, -1, SEEK_CUR);
+
+		if(getc(*sfp) == '/'){
+			if(getc(*sfp) == '/'){
+				while(getc(*sfp) != '\n');
+			}
+			else {
+				fseek(*sfp, -2, SEEK_CUR);
+			}
+		} else {
+			fseek(*sfp, -1, SEEK_CUR);
+		}
+		
+		if(getc(*sfp) == '/'){
+			if(getc(*sfp) == '*'){
+				while(true){
+					if(getc(*sfp) == '*' ){
+						if(getc(*sfp) == '/'){
+							break;
+						} 
+						else {
+							fseek(*sfp, -2, SEEK_CUR);
+						}
+					} 
+					else {
+						fseek(*sfp, -1, SEEK_CUR);
+					}
+					getc(*sfp);
+				}
+			}
+			else {
+				fseek(*sfp, -2, SEEK_CUR);
+			}
+		} 
+		else {
+			fseek(*sfp, -1, SEEK_CUR);
+		}
+	}
+	fseek(*sfp, -1, SEEK_CUR);
 }
 

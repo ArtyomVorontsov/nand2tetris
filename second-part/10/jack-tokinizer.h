@@ -25,4 +25,5 @@ bool isIdentifier(char *token);
 bool isVal(char *token);
 bool isStringVal(char *token);
 bool isBlank(char *token);
+void skipComments(FILE **sfp);
 
