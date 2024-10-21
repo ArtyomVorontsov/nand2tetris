@@ -23,10 +23,22 @@ int main(int argc, char **argv){
 		// If file as argument is provided
 		SourceFileName = filePath;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(filePath);
-
 		sfp = fopen(SourceFileName, "r");
 		dfp = fopen(destFileName, "w");
 		tokenize(sfp, dfp);
+		fclose(sfp);
+		fclose(dfp);
+
+		// compile
+		SourceFileName = destFileName;
+		SourceFileNameWithoutExt = getFileNameWithoutExtension(destFileName);
+		destFileName = getDestFileName(filePath, ".xml");
+		printf("SourceFileName: %s\n", SourceFileName);
+		printf("SourceFileNameWithoutExt: %s\n", SourceFileNameWithoutExt);
+		printf("destFileName: %s\n", destFileName);
+		sfp = fopen(SourceFileName, "r");
+		dfp = fopen(destFileName, "w");
+		compilationEngine(sfp, dfp);
 		fclose(sfp);
 		fclose(dfp);
 	}
@@ -110,6 +122,8 @@ char *getDestFileName(char *filePath, char *postfix){
 	struct dirent *dir;
 	bool argumentIsDirectory = dirP != NULL;
 	char *destFileName;
+	char *sourceFileName;
+	char *sourceFileNameWithoutExt;
 
 	if(argumentIsDirectory){
 		int pathLength = strlen(filePath);
@@ -121,12 +135,12 @@ char *getDestFileName(char *filePath, char *postfix){
 		destFileName = getFileName(filePath);
 		strcat(destFileName, postfix);
 	} else {
-		SourceFileName = getFileName(filePath);
-		SourceFileNameWithoutExt = getFileNameWithoutExtension(SourceFileName);
+		sourceFileName = getFileName(filePath);
+		sourceFileNameWithoutExt = getFileNameWithoutExtension(sourceFileName);
 
 		/* Assign value to variable which holds destination filename */
-		destFileName  = malloc(sizeof(char) * (strlen(SourceFileNameWithoutExt) + 5));
-		strcpy(destFileName, SourceFileNameWithoutExt);
+		destFileName  = malloc(sizeof(char) * (strlen(sourceFileNameWithoutExt) + 5));
+		strcpy(destFileName, sourceFileNameWithoutExt);
 		strcat(destFileName, postfix);
 	}
 

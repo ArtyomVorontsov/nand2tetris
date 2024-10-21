@@ -167,6 +167,7 @@ bool isKeyword(char *token){
 	strcmp(token, "int") == 0 ||
 	strcmp(token, "boolean") == 0 ||
 	strcmp(token, "field") == 0 ||
+	strcmp(token, "static") == 0 ||
 	strcmp(token, "let") == 0 ||
 	strcmp(token, "do") == 0 ||
 	strcmp(token, "if") == 0 ||
