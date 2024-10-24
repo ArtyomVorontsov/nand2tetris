@@ -5,3 +5,4 @@ text.hack
 text.vm
 a.hack
 .gdb_history
+*.xml

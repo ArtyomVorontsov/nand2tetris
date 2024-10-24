@@ -34,6 +34,6 @@ bool compileTerm(FILE *sfp, FILE *dfp);
 void incrementDepth();
 void decrementDepth();
 int getDepth();
-void printTabs(FILE *sfp);
-void printTag(char *tag, FILE *dfp);
+int printTabs(FILE *sfp);
+int printTag(char *tag, FILE *dfp);
 
