@@ -63,10 +63,10 @@ int printTabs(FILE *dfp){
 	int i = 0;
 
 	for(i = 0; i < getDepth(); i++){
-		fprintf(dfp, "\t");	
+		fprintf(dfp, "  ");	
 	}
 
-	return i;
+	return i * 2;
 }
 
 int printTag(char *tag, FILE *dfp){
@@ -473,8 +473,8 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp){
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
 
-	destFilePtrMoved += printTag("<subroutineCall>", dfp);
-	incrementDepth();
+	//destFilePtrMoved += printTag("<subroutineCall>", dfp);
+	//incrementDepth();
 
 	token = getToken(sfp);
 	if(isIdentifierTag(token)){
@@ -520,6 +520,8 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp){
 		moveFPBack(sfp, ptrMoved);
 	}
 
+	compileExpressionList(sfp, dfp);
+
 	token = getToken(sfp);
 	if(strcmp(token, "<symbol> ) </symbol>") == 0){
 		// ')'
@@ -530,8 +532,8 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp){
 		moveFPBack(sfp, ptrMoved);
 	}
 
-	decrementDepth();
-	printTag("</subroutineCall>", dfp);
+	//decrementDepth();
+	//printTag("</subroutineCall>", dfp);
 	return true;
 
 }
@@ -644,7 +646,7 @@ bool compileStatements(FILE *sfp, FILE *dfp){
 	printMsg("compileStatements");
 	// statement*
 	int destFilePtrMoved = 0;
-	destFilePtrMoved += printTag("</statements>", dfp);
+	destFilePtrMoved += printTag("<statements>", dfp);
 	incrementDepth();
 
 	int i = 0;
@@ -1106,6 +1108,62 @@ bool compileExpression(FILE *sfp, FILE *dfp){
 	destFilePtrMoved += printTag("<expression>", dfp);
 	incrementDepth();
 
+	if(compileTerm(sfp, dfp) == false){
+		moveFPBack(dfp, ptrMoved);
+		moveFPBack(dfp, destFilePtrMoved);
+		decrementDepth();
+		return true;
+	}
+
+	decrementDepth();
+	printTag("</expression>", dfp);
+
+	return true;
+}
+
+bool compileExpressionList(FILE *sfp, FILE *dfp){
+	printMsg("compileExpressionList");
+	char *token;
+	int ptrMoved = 0;
+	int destFilePtrMoved = 0;
+
+	destFilePtrMoved += printTag("<expressionList>", dfp);
+
+	token = getToken(sfp);
+	if(strcmp(token, "<symbol> ) </symbol>") == 0){
+		// ')'
+		destFilePtrMoved += printTag("</expressionList>", dfp);
+		return true;
+	}
+	incrementDepth();
+	incrementDepth();
+
+	while(true){
+		token = getToken(sfp);
+		if(strcmp(token, "<symbol> , </symbol>") == 0){
+			ptrMoved += moveFPToNextToken(sfp);
+			destFilePtrMoved += printTag(token, dfp);
+		} else {
+			break;
+		}
+		compileExpression(sfp, dfp);
+	}
+
+	decrementDepth();
+	printTag("</expressionList>", dfp);
+
+	return true;
+}
+
+bool compileTerm(FILE *sfp, FILE *dfp){
+	printMsg("compileTerm");
+	char *token;
+	int ptrMoved = 0;
+	int destFilePtrMoved = 0;
+
+	destFilePtrMoved += printTag("<term>", dfp);
+	incrementDepth();
+
 	token = getToken(sfp);
 	if(isIdentifierTag(token)){
 		ptrMoved += moveFPToNextToken(sfp);
@@ -1114,18 +1172,8 @@ bool compileExpression(FILE *sfp, FILE *dfp){
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
-		return true;
+		return false; 
 	}
-	decrementDepth();
-	printTag("<expression>", dfp);
-
-	return true;
-}
-
-bool compileTerm(FILE *sfp, FILE *dfp){
-	printTag("<term>", dfp);
-	incrementDepth();
-	printMsg("compileTerm");
 	decrementDepth();
 	printTag("</term>", dfp);
 

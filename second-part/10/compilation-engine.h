@@ -30,6 +30,7 @@ bool compileWhile(FILE *sfp, FILE *dfp);
 bool compileDo(FILE *sfp, FILE *dfp);
 bool compileReturn(FILE *sfp, FILE *dfp);
 bool compileExpression(FILE *sfp, FILE *dfp);
+bool compileExpressionList(FILE *sfp, FILE *dfp);
 bool compileTerm(FILE *sfp, FILE *dfp);
 void incrementDepth();
 void decrementDepth();
