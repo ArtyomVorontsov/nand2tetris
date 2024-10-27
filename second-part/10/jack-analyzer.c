@@ -19,8 +19,10 @@ int main(int argc, char **argv){
 		compileDirectoryFiles(dirP, filePath);
 	}
 	else {
-		destFileName = getDestFileName(filePath, "T.xml");
 		// If file as argument is provided
+		
+		// tokenize
+		destFileName = getDestFileName(filePath, "T.xml");
 		SourceFileName = filePath;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(filePath);
 		sfp = fopen(SourceFileName, "r");
@@ -96,6 +98,7 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 
 		if(dir->d_type != DT_DIR){
 
+			// tokenize 
 			strcpy(sourceFileName, filePath);
 			strcat(sourceFileName, "/");
 			strcat(sourceFileName, dir->d_name);
@@ -110,9 +113,26 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 
 			sfp = fopen(sourceFileName, "r");
 			dfp = fopen(destFileName, "a");
-			
+
 			tokenize(sfp, dfp);
+
 			fclose(sfp);
+			fclose(dfp);
+
+			// compile
+			strcpy(SourceFileName, destFileName);
+			strcpy(destFileName, filePath);
+			strcat(destFileName, "/");
+			strcat(destFileName, dir->d_name);
+			destFileName = getDestFileName(destFileName, ".xml");
+
+			sfp = fopen(SourceFileName, "r");
+			dfp = fopen(destFileName, "w");
+
+			compilationEngine(sfp, dfp);
+
+			fclose(sfp);
+			fclose(dfp); 
 		}
 	}
 }
