@@ -723,7 +723,7 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 		return false;
 	}
 
-	/*
+	
 	{
 		int ptrMoved = 0;
 		int destFilePtrMoved = 0;
@@ -753,7 +753,7 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 		} else {
 			moveFPBack(sfp, ptrMoved);
 		}
-	} */
+	}
 
 	
 	token = getToken(sfp);
