@@ -76,7 +76,7 @@ char * advance(FILE **sfp){
 			(c == ')') ||
 			(c == ';') ||
 			(c == ',') ||
-			(c == '~') 
+			(c == '~')
 		){
 			break;
 		}
@@ -272,6 +272,7 @@ void skipComments(FILE **sfp){
 			}
 			else {
 				fseek(*sfp, -2, SEEK_CUR);
+				break;
 			}
 		} 
 		else {

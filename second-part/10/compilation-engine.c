@@ -601,6 +601,7 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 		decrementDepth();
 		return false;
 	}
+
 	// (',' varName)*
 	while(true){
 		int ptrMoved = 0;
@@ -617,28 +618,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 		}
 
 		token = getToken(sfp);
-		if(isKeywordTag(token)){
-			// type
-			ptrMoved += moveFPToNextToken(sfp);
-			destFilePtrMoved += printTag(token, dfp);
-		} else {
-			moveFPBack(sfp, ptrMoved);
-			moveFPBack(dfp, destFilePtrMoved);
-			decrementDepth();
-			return false;
-		}
-		
-
-		token = getToken(sfp);
-		if(isKeywordTag(token)){
+		if(isIdentifierTag(token)){
 			// varName
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
 		} else {
 			moveFPBack(sfp, ptrMoved);
 			moveFPBack(dfp, destFilePtrMoved);
-			decrementDepth();
-			return false;
+			break;
 		}
 	}
 
