@@ -496,7 +496,6 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp){
 	//incrementDepth();
 
 	token = getToken(sfp);
-
 	if(isIdentifierTag(token)){
 		// 'subroutineName'
 		ptrMoved += moveFPToNextToken(sfp);
@@ -713,7 +712,6 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 		return false;
 	}
 
-	/*
 	{
 		int ptrMoved = 0;
 		int destFilePtrMoved = 0;
@@ -743,7 +741,7 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 		} else {
 			moveFPBack(sfp, ptrMoved);
 		}
-	} */
+	} 
 
 	
 	token = getToken(sfp);
@@ -1204,19 +1202,17 @@ bool compileTerm(FILE *sfp, FILE *dfp){
 	else if(ptrMoved = 0, destFilePtrMoved = 0, compileUnaryOp(sfp, dfp) && compileTerm(sfp, dfp)){
 		// unaryOp term
 	}
+	else if(
+		ptrMoved = 0, destFilePtrMoved = 0, 
+		compileTag(sfp, dfp, isIdentifierTag, &ptrMoved, &destFilePtrMoved) &&
+		compileTag(sfp, dfp, isSquareBracketOpenTag, &ptrMoved, &destFilePtrMoved) && 
+		compileExpression(sfp, dfp) &&
+		compileTag(sfp, dfp, isSquareBracketCloseTag, &ptrMoved, &destFilePtrMoved)
+	){
+		// varName '[' expression ']'
+	}
 	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isIdentifierTag, &ptrMoved, &destFilePtrMoved)){
-		if(
-			ptrMoved = 0, destFilePtrMoved = 0,
-			compileTag(sfp, dfp, isSquareBracketOpenTag, &ptrMoved, &destFilePtrMoved) && 
-			compileExpression(sfp, dfp) &&
-			compileTag(sfp, dfp, isSquareBracketCloseTag, &ptrMoved, &destFilePtrMoved)
-		){
-			// varName '[' expression ']'
-			
-		} else {
-			// varName
-		}
-		
+		// varName
 	}
 	else {
 		moveFPBack(dfp, destFilePtrMovedForTermTag);

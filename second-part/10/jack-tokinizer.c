@@ -33,6 +33,10 @@ void tokenize(FILE *sfp, FILE *dfp){
 					fprintf(dfp, "<integerConstant> %s </integerConstant>\n", token);
 					break;
 				case STRING_CONST:
+					// remove string colons
+					token = token + 1;
+					token[strlen(token) - 1] = '\0';
+
 					fprintf(dfp, "<stringConstant> %s </stringConstant>\n", token);
 					break;
 				case BLANK:
@@ -59,14 +63,26 @@ char * advance(FILE **sfp){
 	char c; 
 	int i = 0, j = 0, initialPtrPosition = ftell(*sfp);
 	char *token;
+	bool isStringConstant = false;
 
 	skipComments(sfp);
 
 	while(true){
 		c = getc(*sfp);
 		i++;
+
+		if(c == '"' && i == 1){
+			isStringConstant = true;
+		}
+
+		if(c == '"' && isStringConstant && i > 1){
+			break;
+		}
+
+
 		if(
-			(c == ' ') || 
+			isStringConstant == false &&
+			((c == ' ') || 
 			(c == '\n') || 
 			(c == '\t') || 
 			(c == '\0') || 
@@ -74,9 +90,11 @@ char * advance(FILE **sfp){
 			(c == '.') || 
 			(c == '(') || 
 			(c == ')') ||
+			(c == '[') ||
+			(c == ']') ||
 			(c == ';') ||
 			(c == ',') ||
-			(c == '~')
+			(c == '~'))
 		){
 			break;
 		}
@@ -87,8 +105,18 @@ char * advance(FILE **sfp){
 
 	while(true){
 		c = getc(*sfp);
+
+
+		if(c == '"' && isStringConstant && j > 1){
+			*(token + j) = c;
+			j++;
+			break;
+		}
+
+
 		if(
-			(c == ' ') || 
+			isStringConstant == false &&
+			((c == ' ') || 
 			(c == '\n') || 
 			(c == '\t') || 
 			(c == '\0') || 
@@ -96,9 +124,11 @@ char * advance(FILE **sfp){
 			(c == '.') || 
 			(c == '(') || 
 			(c == ')') ||
+			(c == '[') || 
+			(c == ']') ||
 			(c == ';') ||
 			(c == ',') ||
-			(c == '~') 
+			(c == '~'))
 		){
 			if(j == 0){
 				*(token + j) = c;
@@ -237,7 +267,42 @@ bool isBlank(char *token){
 	return (c == ' ') || (c == '\n') || (c == '\t') || (c == '\0') || (c == -1);
 }
 
+
 void skipComments(FILE **sfp){
+	bool startingAsInlineComment = false;
+	bool startingAsMultilineComment = false;
+
+	if(getc(*sfp) == '/' ){
+		if(getc(*sfp) == '/'){
+			fseek(*sfp, -2, SEEK_CUR);
+			startingAsInlineComment = true;
+		} else {
+			fseek(*sfp, -2, SEEK_CUR);
+		}
+	} else {
+		fseek(*sfp, -1, SEEK_CUR);
+		return;
+	}
+
+	if(getc(*sfp) == '/' ){
+		if(getc(*sfp) == '*'){
+			fseek(*sfp, -2, SEEK_CUR);
+			startingAsMultilineComment = true;
+		} else {
+			fseek(*sfp, -2, SEEK_CUR);
+		}
+	} else {
+		fseek(*sfp, -1, SEEK_CUR);
+	}
+
+	if(
+		startingAsInlineComment == false && 
+		startingAsMultilineComment == false
+	){
+		return;
+	}
+
+
 	// Skip comments
 	while(getc(*sfp) == '/'){
 		fseek(*sfp, -1, SEEK_CUR);
@@ -278,6 +343,8 @@ void skipComments(FILE **sfp){
 		else {
 			fseek(*sfp, -1, SEEK_CUR);
 		}
+
+
 	}
 	fseek(*sfp, -1, SEEK_CUR);
 }
