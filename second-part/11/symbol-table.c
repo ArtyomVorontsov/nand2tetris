@@ -1,9 +1,8 @@
 #include "./symbol-table.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <glib.h>
 
-void createSymbolTable()
+struct SymbolTable *createSymbolTable()
 {
     struct SymbolTable *symbolTable = malloc(sizeof(struct SymbolTable));
 
@@ -39,7 +38,7 @@ int varCount(struct SymbolTable *this, enum KIND kind)
     return count;
 }
 
-enum KIND kindOf(struct SymbolTable *this, char *name)
+int kindOf(struct SymbolTable *this, char *name)
 {
     GList *list = g_list_first(this->list);
 
@@ -56,7 +55,7 @@ enum KIND kindOf(struct SymbolTable *this, char *name)
 
     if (foundListItem == NULL)
     {
-        return NULL;
+        return -1;
     }
 
     return foundListItem->kind;

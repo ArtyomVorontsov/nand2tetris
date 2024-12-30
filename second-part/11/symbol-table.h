@@ -1,3 +1,5 @@
+#include <glib.h>
+
 enum KIND
 {
     STATIC,
@@ -24,10 +26,10 @@ struct SymbolTableRecord
     enum KIND kind;
 };
 
-void createSymbolTable();
+struct SymbolTable *createSymbolTable();
 void reset(struct SymbolTable *this);
 void define(struct SymbolTable *this, char *name, char *type, enum KIND kind);
 int varCount(struct SymbolTable *this, enum KIND kind);
-enum KIND kindOf(struct SymbolTable *this, char *name);
+int kindOf(struct SymbolTable *this, char *name);
 char *typeOf(struct SymbolTable *this, char *name);
 int indexOf(struct SymbolTable *this, char *name);
