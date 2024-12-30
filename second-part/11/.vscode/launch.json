@@ -16,6 +16,7 @@
             "MIMode": "gdb",
             "externalConsole": false,
             "preLaunchTask": "build project",
+            "postDebugTask": "clean project"
         }
     ]
 }
