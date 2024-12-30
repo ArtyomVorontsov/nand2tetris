@@ -22,10 +22,14 @@ int main(int argc, char **argv){
 		// If file as argument is provided
 		
 		// tokenize
-		destFileName = getDestFileName(filePath, "T.xml");
 		SourceFileName = filePath;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(filePath);
 		sfp = fopen(SourceFileName, "r");
+		if(sfp == NULL){
+			printf("No such file or directory.\n");
+			exit(1);
+		}
+		destFileName = getDestFileName(filePath, "T.xml");
 		dfp = fopen(destFileName, "w");
 		tokenize(sfp, dfp);
 		fclose(sfp);
@@ -92,7 +96,9 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 	FILE *sfp, *dfp;
 	struct dirent *dir;
 
-	while((dir = readdir(dirP)) != NULL){
+	dir = readdir(dirP);
+
+	do{
 		sourceFileName = malloc(sizeof(char) * 200);
 		destFileName = malloc(sizeof(char) * 200);
 
@@ -134,7 +140,7 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 			fclose(sfp);
 			fclose(dfp); 
 		}
-	}
+	} while ((dir = readdir(dirP)) != NULL);
 }
 
 char *getDestFileName(char *filePath, char *postfix){
