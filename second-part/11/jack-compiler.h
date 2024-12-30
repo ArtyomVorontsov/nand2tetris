@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include <dirent.h>
-#include "jack-tokinizer.h"
-#include "compilation-engine.h"
-
 
 char *getFileName(char *path);
 char *getFileNameWithoutExtension(char *fileName);

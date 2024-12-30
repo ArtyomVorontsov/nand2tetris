@@ -8,7 +8,7 @@
             "name":"gcc - Build and debug project",
             "type":"cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/jack-analyzer.out",
+            "program": "${workspaceRoot}/jack-compiler.out",
             "args": ["test-programs/Square"],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",

@@ -1,9 +1,16 @@
-#include "jack-analyzer.h"
+#include "jack-compiler.h"
+#include "jack-tokinizer.h"
+#include "compilation-engine.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
-char * SourceFileName;
-char * SourceFileNameWithoutExt;
+char *SourceFileName;
+char *SourceFileNameWithoutExt;
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
 	char *filePath = *(argv + 1);
 	char *destFileName;
 	const int MAX_LINE_SIZE = 1000;
@@ -14,18 +21,21 @@ int main(int argc, char **argv){
 	struct dirent *dir;
 	bool argumentIsDirectory = dirP != NULL;
 
-	if(argumentIsDirectory) {
+	if (argumentIsDirectory)
+	{
 		// If directory as argument is provided
 		compileDirectoryFiles(dirP, filePath);
 	}
-	else {
+	else
+	{
 		// If file as argument is provided
-		
+
 		// tokenize
 		SourceFileName = filePath;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(filePath);
 		sfp = fopen(SourceFileName, "r");
-		if(sfp == NULL){
+		if (sfp == NULL)
+		{
 			printf("No such file or directory.\n");
 			exit(1);
 		}
@@ -52,24 +62,29 @@ int main(int argc, char **argv){
 	return 0;
 }
 
-char *getFileNameWithoutExtension(char *fileName){
+char *getFileNameWithoutExtension(char *fileName)
+{
 	int i = 0, j = 0;
 	int fileNameLength = strlen(fileName);
 	char *fileNameWithoutExtension = malloc(sizeof(char) * fileNameLength);
 	char *fnp = fileName + fileNameLength;
 	bool extensionPassed = false;
 
-	while(i <= fileNameLength){
-		if(*fnp == '/'){
+	while (i <= fileNameLength)
+	{
+		if (*fnp == '/')
+		{
 			break;
 		}
 
-		if(extensionPassed){
+		if (extensionPassed)
+		{
 			*(fileNameWithoutExtension + j) = *fnp;
 			j++;
 		}
 
-		if(*fnp  == '.'){
+		if (*fnp == '.')
+		{
 			extensionPassed = true;
 		}
 
@@ -81,9 +96,9 @@ char *getFileNameWithoutExtension(char *fileName){
 
 	int fileNameWithoutExtensionLength = strlen(fileNameWithoutExtension);
 	char *fileNameWithoutExtensionReversed = malloc(sizeof(char) * fileNameWithoutExtensionLength);
-	
-	for(int i = 0; i < fileNameWithoutExtensionLength; i++)
-	        fileNameWithoutExtensionReversed[i] = fileNameWithoutExtension[fileNameWithoutExtensionLength - i - 1];
+
+	for (int i = 0; i < fileNameWithoutExtensionLength; i++)
+		fileNameWithoutExtensionReversed[i] = fileNameWithoutExtension[fileNameWithoutExtensionLength - i - 1];
 
 	fileNameWithoutExtensionReversed[fileNameWithoutExtensionLength] = '\0';
 
@@ -91,20 +106,23 @@ char *getFileNameWithoutExtension(char *fileName){
 	return fileNameWithoutExtensionReversed;
 }
 
-void compileDirectoryFiles(DIR *dirP, char *filePath){
+void compileDirectoryFiles(DIR *dirP, char *filePath)
+{
 	char *sourceFileName, *destFileName;
 	FILE *sfp, *dfp;
 	struct dirent *dir;
 
 	dir = readdir(dirP);
 
-	do{
+	do
+	{
 		sourceFileName = malloc(sizeof(char) * 200);
 		destFileName = malloc(sizeof(char) * 200);
 
-		if(dir->d_type != DT_DIR){
+		if (dir->d_type != DT_DIR)
+		{
 
-			// tokenize 
+			// tokenize
 			strcpy(sourceFileName, filePath);
 			strcat(sourceFileName, "/");
 			strcat(sourceFileName, dir->d_name);
@@ -138,12 +156,13 @@ void compileDirectoryFiles(DIR *dirP, char *filePath){
 			compilationEngine(sfp, dfp);
 
 			fclose(sfp);
-			fclose(dfp); 
+			fclose(dfp);
 		}
 	} while ((dir = readdir(dirP)) != NULL);
 }
 
-char *getDestFileName(char *filePath, char *postfix){
+char *getDestFileName(char *filePath, char *postfix)
+{
 	DIR *dirP = opendir(filePath);
 	struct dirent *dir;
 	bool argumentIsDirectory = dirP != NULL;
@@ -151,21 +170,25 @@ char *getDestFileName(char *filePath, char *postfix){
 	char *sourceFileName;
 	char *sourceFileNameWithoutExt;
 
-	if(argumentIsDirectory){
+	if (argumentIsDirectory)
+	{
 		int pathLength = strlen(filePath);
 
-		if(filePath[pathLength - 1] == '/'){
+		if (filePath[pathLength - 1] == '/')
+		{
 			filePath[pathLength - 1] = '\0';
 		}
 
 		destFileName = getFileName(filePath);
 		strcat(destFileName, postfix);
-	} else {
+	}
+	else
+	{
 		sourceFileName = getFileName(filePath);
 		sourceFileNameWithoutExt = getFileNameWithoutExtension(sourceFileName);
 
 		/* Assign value to variable which holds destination filename */
-		destFileName  = malloc(sizeof(char) * (strlen(sourceFileNameWithoutExt) + 5));
+		destFileName = malloc(sizeof(char) * (strlen(sourceFileNameWithoutExt) + 5));
 		strcpy(destFileName, sourceFileNameWithoutExt);
 		strcat(destFileName, postfix);
 	}
@@ -173,14 +196,17 @@ char *getDestFileName(char *filePath, char *postfix){
 	return destFileName;
 }
 
-char *getFileName(char *path){
+char *getFileName(char *path)
+{
 	int i = 0;
 	int pathLength = strlen(path);
 	char *fileName = malloc(sizeof(char) * pathLength);
 	char *fnp = path + pathLength - 1;
 
-	while(i <= pathLength){
-		if(*fnp == '/'){
+	while (i <= pathLength)
+	{
+		if (*fnp == '/')
+		{
 			break;
 		}
 		*(fileName + i) = *fnp;
@@ -192,13 +218,12 @@ char *getFileName(char *path){
 
 	int fileNameLength = strlen(fileName);
 	char *fileNameReversed = malloc(sizeof(char) * fileNameLength);
-	
-	for(int i = 0; i < fileNameLength; i++)
-	        fileNameReversed[i] = fileName[fileNameLength - i - 1];
+
+	for (int i = 0; i < fileNameLength; i++)
+		fileNameReversed[i] = fileName[fileNameLength - i - 1];
 
 	fileNameReversed[fileNameLength] = '\0';
 
 	free(fileName);
 	return fileNameReversed;
 }
-

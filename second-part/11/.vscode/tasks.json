@@ -9,7 +9,7 @@
                 "-g",
                 "${workspaceFolder}/*.c",
                 "-o",
-                "${workspaceFolder}/${fileBasenameNoExtension}.out",
+                "${workspaceFolder}/jack-compiler.out",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

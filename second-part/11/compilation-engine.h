@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
 void compilationEngine(FILE *sfp, FILE *dfp);
 char *getToken(FILE *sfp);

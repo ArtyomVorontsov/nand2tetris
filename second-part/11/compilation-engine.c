@@ -1,14 +1,21 @@
 #include "./compilation-engine.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define DEV_MODE true
 
-void printMsg(char *msg){
-	if(DEV_MODE){
+void printMsg(char *msg)
+{
+	if (DEV_MODE)
+	{
 		printf("dev: %s\n", msg);
 	}
 }
 
-void compilationEngine(FILE *sfp, FILE *dfp){
+void compilationEngine(FILE *sfp, FILE *dfp)
+{
 	printMsg("compilationEngine");
 	char *token;
 
@@ -17,64 +24,78 @@ void compilationEngine(FILE *sfp, FILE *dfp){
 
 	int res = compileClass(sfp, dfp);
 	printf("res %d", res);
-
 }
 
-char *getToken(FILE *sfp){
+char *getToken(FILE *sfp)
+{
 	char *token = malloc(sizeof(char) * 100);
 	int i = 0;
 
-	while(((*(token + i) = getc(sfp)) != '\n') && (feof(sfp) == false)) { i++;}
+	while (((*(token + i) = getc(sfp)) != '\n') && (feof(sfp) == false))
+	{
+		i++;
+	}
 	token[i] = '\0';
 
 	fseek(sfp, -(i + 1), SEEK_CUR);
-	
+
 	return token;
 }
 
-int moveFPToNextToken(FILE *sfp){
+int moveFPToNextToken(FILE *sfp)
+{
 	int i = 0;
-	while(i++, (getc(sfp) != '\n') && (feof(sfp) == false));
+	while (i++, (getc(sfp) != '\n') && (feof(sfp) == false))
+		;
 
 	return i;
 }
 
-void moveFPBack(FILE *sfp, int x){
-	if(x) fseek(sfp, -(x), SEEK_CUR);
+void moveFPBack(FILE *sfp, int x)
+{
+	if (x)
+		fseek(sfp, -(x), SEEK_CUR);
 }
 
 int depth = 0;
 
-void incrementDepth(){
+void incrementDepth()
+{
 	printf("inc depth %d \n", depth);
 	depth++;
 }
 
-void decrementDepth(){
+void decrementDepth()
+{
 	depth--;
 	printf("dec depth %d \n", depth);
 }
 
-int getDepth(){
+int getDepth()
+{
 	return depth;
 }
 
-int printTabs(FILE *dfp){
+int printTabs(FILE *dfp)
+{
 	int i = 0;
 
-	for(i = 0; i < getDepth(); i++){
-		fprintf(dfp, "  ");	
+	for (i = 0; i < getDepth(); i++)
+	{
+		fprintf(dfp, "  ");
 	}
 
 	return i * 2;
 }
 
-int printTag(char *tag, FILE *dfp){
+int printTag(char *tag, FILE *dfp)
+{
 	int t = printTabs(dfp);
 	return fprintf(dfp, "%s\n", tag) + t;
 }
 
-bool compileClass(FILE *sfp, FILE *dfp){
+bool compileClass(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileClass");
 	// 'class' className '{' classVarDec* subroutineDec* '}'
 	bool isClass;
@@ -85,70 +106,84 @@ bool compileClass(FILE *sfp, FILE *dfp){
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
 	char *token;
-	
+
 	destFilePtrMoved += printTag("<class>", dfp);
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(strcmp(token, "<keyword> class </keyword>") == 0){
-		// 'class' 
+	if (strcmp(token, "<keyword> class </keyword>") == 0)
+	{
+		// 'class'
 		classKeyword = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	
 	token = getToken(sfp);
-	if(isIdentifierTag(token)){
-		// className 
+	if (isIdentifierTag(token))
+	{
+		// className
 		className = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
 	}
 
-
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> { </symbol>") == 0){
+	if (strcmp(token, "<symbol> { </symbol>") == 0)
+	{
 		// '{'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	while(true){
-		// classVarDec* 
-		if(compileClassVarDec(sfp, dfp) == false){
+	while (true)
+	{
+		// classVarDec*
+		if (compileClassVarDec(sfp, dfp) == false)
+		{
 			break;
 		}
-	} 
-	
-	while(true){
-		// subroutineDec* 
-		if(compileSubroutine(sfp, dfp) == false){
+	}
+
+	while (true)
+	{
+		// subroutineDec*
+		if (compileSubroutine(sfp, dfp) == false)
+		{
 			break;
 		}
-	} 
+	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> } </symbol>") == 0){
+	if (strcmp(token, "<symbol> } </symbol>") == 0)
+	{
 		// '}'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -160,7 +195,8 @@ bool compileClass(FILE *sfp, FILE *dfp){
 	return true;
 };
 
-bool compileClassVarDec(FILE *sfp, FILE *dfp){
+bool compileClassVarDec(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileClassVarDec");
 	// ('static' | 'field') type varName(',' varName)* ';'
 	char *token;
@@ -171,14 +207,16 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp){
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(
-		strcmp(token, "<keyword> static </keyword>") == 0 || 
-		strcmp(token, "<keyword> field </keyword>") == 0
-	){
+	if (
+		strcmp(token, "<keyword> static </keyword>") == 0 ||
+		strcmp(token, "<keyword> field </keyword>") == 0)
+	{
 		// ('static' | 'field')
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -186,16 +224,18 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(
-		strcmp(token, "<keyword> int </keyword>") == 0||
+	if (
+		strcmp(token, "<keyword> int </keyword>") == 0 ||
 		strcmp(token, "<keyword> boolean </keyword>") == 0 ||
-		strcmp(token, "<keyword> char </keyword>") == 0||
-		isIdentifierTag(token)
-	){
+		strcmp(token, "<keyword> char </keyword>") == 0 ||
+		isIdentifierTag(token))
+	{
 		// type
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -203,11 +243,14 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(isIdentifierTag(token)){
+	if (isIdentifierTag(token))
+	{
 		// varName
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -216,27 +259,34 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp){
 
 	int i = 0;
 	// (',' varName)*
-	while(true){
+	while (true)
+	{
 		int ptrMoved = 0;
 		int destFilePtrMoved = 0;
 		token = getToken(sfp);
 
-		if(strcmp(token, "<symbol> , </symbol>") == 0){
+		if (strcmp(token, "<symbol> , </symbol>") == 0)
+		{
 			// ','
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
 
 			token = getToken(sfp);
-			if(isIdentifierTag(token)){
+			if (isIdentifierTag(token))
+			{
 				// varName
 				ptrMoved += moveFPToNextToken(sfp);
 				destFilePtrMoved += printTag(token, dfp);
-			} else {
+			}
+			else
+			{
 				moveFPBack(dfp, destFilePtrMoved);
 				moveFPBack(sfp, ptrMoved);
 				break;
 			}
-		} else {
+		}
+		else
+		{
 			moveFPBack(dfp, destFilePtrMoved);
 			moveFPBack(sfp, ptrMoved);
 			break;
@@ -246,11 +296,14 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ; </symbol>") == 0){
+	if (strcmp(token, "<symbol> ; </symbol>") == 0)
+	{
 		// ';'
 		destFilePtrMoved += printTag(token, dfp);
 		ptrMoved += moveFPToNextToken(sfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -262,7 +315,8 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileSubroutine(FILE *sfp, FILE *dfp){
+bool compileSubroutine(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileSubroutine");
 	// ('constructor' | 'function' | 'method') ('void' | type) subroutineName '(' parameterList ')' subroutineBody
 	char *token;
@@ -273,15 +327,17 @@ bool compileSubroutine(FILE *sfp, FILE *dfp){
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(
-		strcmp(token, "<keyword> constructor </keyword>") == 0||
+	if (
+		strcmp(token, "<keyword> constructor </keyword>") == 0 ||
 		strcmp(token, "<keyword> function </keyword>") == 0 ||
-		strcmp(token, "<keyword> method </keyword>") == 0
-	){
+		strcmp(token, "<keyword> method </keyword>") == 0)
+	{
 		// ('constructor' | 'function' | 'method')
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -289,11 +345,14 @@ bool compileSubroutine(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<keyword> void </keyword>") == 0 || isIdentifierTag(token)){
+	if (strcmp(token, "<keyword> void </keyword>") == 0 || isIdentifierTag(token))
+	{
 		// ('void' | type)
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -301,11 +360,14 @@ bool compileSubroutine(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(isIdentifierTag(token)){
+	if (isIdentifierTag(token))
+	{
 		// subroutineName
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -313,11 +375,14 @@ bool compileSubroutine(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ( </symbol>") == 0){
+	if (strcmp(token, "<symbol> ( </symbol>") == 0)
+	{
 		// '('
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -328,18 +393,22 @@ bool compileSubroutine(FILE *sfp, FILE *dfp){
 	compileParameterList(sfp, dfp);
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ) </symbol>") == 0){
+	if (strcmp(token, "<symbol> ) </symbol>") == 0)
+	{
 		// ')'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	if(compileSubroutineBody(sfp, dfp) == false){
+	if (compileSubroutineBody(sfp, dfp) == false)
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -351,7 +420,8 @@ bool compileSubroutine(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileParameterList(FILE *sfp, FILE *dfp){
+bool compileParameterList(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileParameterList");
 	// ((type varName) (',' type varName)*)?
 	char *token;
@@ -362,7 +432,8 @@ bool compileParameterList(FILE *sfp, FILE *dfp){
 	destFilePtrMoved += printTag("<parameterList>", dfp);
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ) </symbol>") == 0){
+	if (strcmp(token, "<symbol> ) </symbol>") == 0)
+	{
 		// ')'
 		destFilePtrMoved += printTag("</parameterList>", dfp);
 		return true;
@@ -371,64 +442,78 @@ bool compileParameterList(FILE *sfp, FILE *dfp){
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(isKeywordTag(token)){
+	if (isKeywordTag(token))
+	{
 		// type
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
 	}
-	
 
 	token = getToken(sfp);
-	if(isIdentifierTag(token)){
+	if (isIdentifierTag(token))
+	{
 		// varName
 		ptrMoved += moveFPToNextToken(sfp);
 		printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	while(true){
+	while (true)
+	{
 		int ptrMoved = 0;
 		int destFilePtrMoved = 0;
 		token = getToken(sfp);
 
-		if(strcmp(token, "<symbol> , </symbol>") == 0){
+		if (strcmp(token, "<symbol> , </symbol>") == 0)
+		{
 			// ','
 			ptrMoved += moveFPToNextToken(sfp);
 			printTag(token, dfp);
-		} else {
+		}
+		else
+		{
 			moveFPBack(sfp, ptrMoved);
 			moveFPBack(dfp, destFilePtrMoved);
 			break;
 		}
 
 		token = getToken(sfp);
-		if(isKeywordTag(token)){
+		if (isKeywordTag(token))
+		{
 			// type
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
-		} else {
+		}
+		else
+		{
 			moveFPBack(sfp, ptrMoved);
 			moveFPBack(dfp, destFilePtrMoved);
 			decrementDepth();
 			return false;
 		}
-		
 
 		token = getToken(sfp);
-		if(isIdentifierTag(token)){
+		if (isIdentifierTag(token))
+		{
 			// varName
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
-		} else {
+		}
+		else
+		{
 			moveFPBack(sfp, ptrMoved);
 			moveFPBack(dfp, destFilePtrMoved);
 			decrementDepth();
@@ -443,7 +528,8 @@ bool compileParameterList(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileSubroutineBody(FILE *sfp, FILE *dfp){
+bool compileSubroutineBody(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileSubroutineBody");
 	// '{' varDec* statements '}'
 	char *token;
@@ -454,27 +540,34 @@ bool compileSubroutineBody(FILE *sfp, FILE *dfp){
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> { </symbol>") == 0){
+	if (strcmp(token, "<symbol> { </symbol>") == 0)
+	{
 		// '{'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	while(compileVarDec(sfp, dfp));
+	while (compileVarDec(sfp, dfp))
+		;
 
 	compileStatements(sfp, dfp);
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> } </symbol>") == 0){
+	if (strcmp(token, "<symbol> } </symbol>") == 0)
+	{
 		// '}'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
@@ -486,50 +579,58 @@ bool compileSubroutineBody(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileSubroutineCall(FILE *sfp, FILE *dfp){
-	// subroutineName '(' expressionList ')' | (className | varName) '.' subroutineName '(' expressionList ')'	
+bool compileSubroutineCall(FILE *sfp, FILE *dfp)
+{
+	// subroutineName '(' expressionList ')' | (className | varName) '.' subroutineName '(' expressionList ')'
 	char *token;
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
 
-	//destFilePtrMoved += printTag("<subroutineCall>", dfp);
-	//incrementDepth();
+	// destFilePtrMoved += printTag("<subroutineCall>", dfp);
+	// incrementDepth();
 
 	token = getToken(sfp);
-	if(isIdentifierTag(token)){
+	if (isIdentifierTag(token))
+	{
 		// 'subroutineName'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		return false;
 	}
 
-	{	
+	{
 		// optional
 		token = getToken(sfp);
-		if(strcmp(token, "<symbol> . </symbol>") == 0){
+		if (strcmp(token, "<symbol> . </symbol>") == 0)
+		{
 			// '.'
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
-		} 
+		}
 
 		token = getToken(sfp);
-		if(isIdentifierTag(token)){
+		if (isIdentifierTag(token))
+		{
 			// 'subroutineName'
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
-		} 
+		}
 	}
-	
-	
+
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ( </symbol>") == 0){
+	if (strcmp(token, "<symbol> ( </symbol>") == 0)
+	{
 		// '('
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		token = getToken(sfp);
@@ -539,23 +640,26 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp){
 	compileExpressionList(sfp, dfp);
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ) </symbol>") == 0){
+	if (strcmp(token, "<symbol> ) </symbol>") == 0)
+	{
 		// ')'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		return false;
 	}
 
-	//decrementDepth();
-	//printTag("</subroutineCall>", dfp);
+	// decrementDepth();
+	// printTag("</subroutineCall>", dfp);
 	return true;
-
 }
 
-bool compileVarDec(FILE *sfp, FILE *dfp){
+bool compileVarDec(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileVarDec");
 	// 'var' type varName (',' varName)* ';'
 	char *token;
@@ -566,11 +670,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(strcmp(token, "<keyword> var </keyword>") == 0){
+	if (strcmp(token, "<keyword> var </keyword>") == 0)
+	{
 		// 'var'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -578,11 +685,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(isIdentifierTag(token) || isKeywordTag(token)){
+	if (isIdentifierTag(token) || isKeywordTag(token))
+	{
 		// type
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -590,11 +700,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(isIdentifierTag(token)){
+	if (isIdentifierTag(token))
+	{
 		// varName
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -602,26 +715,33 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 	}
 
 	// (',' varName)*
-	while(true){
+	while (true)
+	{
 		int ptrMoved = 0;
 		int destFilePtrMoved = 0;
 		token = getToken(sfp);
-		if(strcmp(token, "<symbol> , </symbol>") == 0){
+		if (strcmp(token, "<symbol> , </symbol>") == 0)
+		{
 			// ','
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
-		} else {
+		}
+		else
+		{
 			moveFPBack(dfp, destFilePtrMoved);
 			moveFPBack(sfp, ptrMoved);
 			break;
 		}
 
 		token = getToken(sfp);
-		if(isIdentifierTag(token)){
+		if (isIdentifierTag(token))
+		{
 			// varName
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
-		} else {
+		}
+		else
+		{
 			moveFPBack(sfp, ptrMoved);
 			moveFPBack(dfp, destFilePtrMoved);
 			break;
@@ -629,11 +749,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ; </symbol>") == 0){
+	if (strcmp(token, "<symbol> ; </symbol>") == 0)
+	{
 		// ';'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(sfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
@@ -646,7 +769,8 @@ bool compileVarDec(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileStatements(FILE *sfp, FILE *dfp){
+bool compileStatements(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileStatements");
 	// statement*
 	int destFilePtrMoved = 0;
@@ -654,31 +778,32 @@ bool compileStatements(FILE *sfp, FILE *dfp){
 	incrementDepth();
 
 	int i = 0;
-	while(true){
+	while (true)
+	{
 		// letStatement | ifStatement | whileStatement | doStatement | returnStatement
-		if(
-				compileLet(sfp, dfp) == false &&
-				compileIf(sfp, dfp) == false  &&
-				compileWhile(sfp, dfp) == false &&
-				compileDo(sfp, dfp) == false &&
-				compileReturn(sfp, dfp) == false
-		){
+		if (
+			compileLet(sfp, dfp) == false &&
+			compileIf(sfp, dfp) == false &&
+			compileWhile(sfp, dfp) == false &&
+			compileDo(sfp, dfp) == false &&
+			compileReturn(sfp, dfp) == false)
+		{
 			break;
 		}
 		i++;
 	}
 
-
-	
 	decrementDepth();
 	destFilePtrMoved += printTag("</statements>", dfp);
-	if(i == 0){
+	if (i == 0)
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 	}
 	return true;
 }
 
-bool compileLet(FILE *sfp, FILE *dfp) {
+bool compileLet(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileLet");
 	// 'let' varName ('[' expression ']')? '=' expression ';'
 	char *token;
@@ -689,11 +814,14 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(strcmp(token, "<keyword> let </keyword>") == 0){
+	if (strcmp(token, "<keyword> let </keyword>") == 0)
+	{
 		// 'let'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -701,11 +829,14 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 	}
 
 	token = getToken(sfp);
-	if(isIdentifierTag(token)){
+	if (isIdentifierTag(token))
+	{
 		// 'varName'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -716,13 +847,15 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 		int ptrMoved = 0;
 		int destFilePtrMoved = 0;
 		token = getToken(sfp);
-		if(strcmp(token, "<symbol> [ </symbol>") == 0){
+		if (strcmp(token, "<symbol> [ </symbol>") == 0)
+		{
 			// '[' ?
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
 
-			if(compileExpression(sfp, dfp) == false){
-				// expression ? 
+			if (compileExpression(sfp, dfp) == false)
+			{
+				// expression ?
 				moveFPBack(dfp, destFilePtrMoved);
 				moveFPBack(sfp, ptrMoved);
 				decrementDepth();
@@ -730,26 +863,33 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 			}
 
 			token = getToken(sfp);
-			if(strcmp(token, "<symbol> ] </symbol>") == 0){
+			if (strcmp(token, "<symbol> ] </symbol>") == 0)
+			{
 				// ']' ?
 				ptrMoved += moveFPToNextToken(sfp);
 				destFilePtrMoved += printTag(token, dfp);
-			} else {
+			}
+			else
+			{
 				moveFPBack(dfp, destFilePtrMoved);
 				moveFPBack(sfp, ptrMoved);
 			}
-		} else {
+		}
+		else
+		{
 			moveFPBack(sfp, ptrMoved);
 		}
-	} 
+	}
 
-	
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> = </symbol>") == 0){
+	if (strcmp(token, "<symbol> = </symbol>") == 0)
+	{
 		// '='
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -758,8 +898,9 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 
 	token = getToken(sfp);
 
-	if(compileExpression(sfp, dfp) == false){
-		// expression 
+	if (compileExpression(sfp, dfp) == false)
+	{
+		// expression
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -767,11 +908,14 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ; </symbol>") == 0){
+	if (strcmp(token, "<symbol> ; </symbol>") == 0)
+	{
 		// ';'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -783,22 +927,26 @@ bool compileLet(FILE *sfp, FILE *dfp) {
 	return true;
 }
 
-bool compileIf(FILE *sfp, FILE *dfp){
+bool compileIf(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileIf");
 	// 'if' '(' expression ')' '{' statements '}' ('else' '{' statements '}')?
 	char *token;
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
-	
+
 	destFilePtrMoved += printTag("<ifStatement>", dfp);
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(strcmp(token, "<keyword> if </keyword>") == 0){
+	if (strcmp(token, "<keyword> if </keyword>") == 0)
+	{
 		// 'if'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -806,50 +954,60 @@ bool compileIf(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ( </symbol>") == 0){
+	if (strcmp(token, "<symbol> ( </symbol>") == 0)
+	{
 		// '('
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	if(compileExpression(sfp, dfp) == false){
-		// expression 
+	if (compileExpression(sfp, dfp) == false)
+	{
+		// expression
 		decrementDepth();
 		return false;
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ) </symbol>") == 0){
+	if (strcmp(token, "<symbol> ) </symbol>") == 0)
+	{
 		// ')'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
 		return false;
-
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> { </symbol>") == 0){
+	if (strcmp(token, "<symbol> { </symbol>") == 0)
+	{
 		// '{'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	if(compileStatements(sfp, dfp) == false){
-		// expression 
+	if (compileStatements(sfp, dfp) == false)
+	{
+		// expression
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -857,11 +1015,14 @@ bool compileIf(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> } </symbol>") == 0){
+	if (strcmp(token, "<symbol> } </symbol>") == 0)
+	{
 		// '}'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -872,24 +1033,29 @@ bool compileIf(FILE *sfp, FILE *dfp){
 	{
 		int ptrMoved = 0;
 		int destFilePtrMoved = 0;
-		if(strcmp(token, "<keyword> else </keyword>") == 0){
+		if (strcmp(token, "<keyword> else </keyword>") == 0)
+		{
 			// 'else' ?
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
 
 			token = getToken(sfp);
-			if(strcmp(token, "<symbol> { </symbol>") == 0){
+			if (strcmp(token, "<symbol> { </symbol>") == 0)
+			{
 				// '{' ?
 				ptrMoved += moveFPToNextToken(sfp);
 				destFilePtrMoved += printTag(token, dfp);
-			} else {
+			}
+			else
+			{
 				moveFPBack(dfp, destFilePtrMoved);
 				moveFPBack(sfp, ptrMoved);
 				decrementDepth();
 				return false;
 			}
 
-			if(compileStatements(sfp, dfp) == false){
+			if (compileStatements(sfp, dfp) == false)
+			{
 				// expression ?
 				moveFPBack(dfp, destFilePtrMoved);
 				moveFPBack(sfp, ptrMoved);
@@ -898,28 +1064,33 @@ bool compileIf(FILE *sfp, FILE *dfp){
 			}
 
 			token = getToken(sfp);
-			if(strcmp(token, "<symbol> } </symbol>") == 0){
+			if (strcmp(token, "<symbol> } </symbol>") == 0)
+			{
 				// '}' ?
 				ptrMoved += moveFPToNextToken(sfp);
 				destFilePtrMoved += printTag(token, dfp);
-			} else {
+			}
+			else
+			{
 				moveFPBack(dfp, destFilePtrMoved);
 				moveFPBack(sfp, ptrMoved);
 				decrementDepth();
 				return false;
 			}
-		} else {
+		}
+		else
+		{
 			moveFPBack(sfp, ptrMoved);
 		}
 	}
-
 
 	decrementDepth();
 	printTag("</ifStatement>", dfp);
 	return true;
 }
 
-bool compileWhile(FILE *sfp, FILE *dfp){
+bool compileWhile(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileWhile");
 	// 'while' '(' expression ')' '{' statements '}'
 	char *token;
@@ -929,13 +1100,15 @@ bool compileWhile(FILE *sfp, FILE *dfp){
 	destFilePtrMoved += printTag("<whileStatement>", dfp);
 	incrementDepth();
 
-
 	token = getToken(sfp);
-	if(strcmp(token, "<keyword> while </keyword>") == 0){
+	if (strcmp(token, "<keyword> while </keyword>") == 0)
+	{
 		// 'while'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -943,31 +1116,38 @@ bool compileWhile(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ( </symbol>") == 0){
+	if (strcmp(token, "<symbol> ( </symbol>") == 0)
+	{
 		// '('
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	if(compileExpression(sfp, dfp) == false){
+	if (compileExpression(sfp, dfp) == false)
+	{
 		// expression
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
 		return false;
 	}
-	
+
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ) </symbol>") == 0){
+	if (strcmp(token, "<symbol> ) </symbol>") == 0)
+	{
 		// ')'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -975,18 +1155,22 @@ bool compileWhile(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> { </symbol>") == 0){
+	if (strcmp(token, "<symbol> { </symbol>") == 0)
+	{
 		// '{'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	if(compileStatements(sfp, dfp) == false){
+	if (compileStatements(sfp, dfp) == false)
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -994,11 +1178,14 @@ bool compileWhile(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> } </symbol>") == 0){
+	if (strcmp(token, "<symbol> } </symbol>") == 0)
+	{
 		// '}'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -1010,7 +1197,8 @@ bool compileWhile(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileDo(FILE *sfp, FILE *dfp){
+bool compileDo(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileDo");
 	// 'do' subroutineCall ';'
 	char *token;
@@ -1022,11 +1210,14 @@ bool compileDo(FILE *sfp, FILE *dfp){
 
 	token = getToken(sfp);
 
-	if(strcmp(token, "<keyword> do </keyword>") == 0){
+	if (strcmp(token, "<keyword> do </keyword>") == 0)
+	{
 		// 'do'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -1034,7 +1225,8 @@ bool compileDo(FILE *sfp, FILE *dfp){
 	}
 
 	// subroutineCall
-	if(compileSubroutineCall(sfp, dfp) == false){
+	if (compileSubroutineCall(sfp, dfp) == false)
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -1042,11 +1234,14 @@ bool compileDo(FILE *sfp, FILE *dfp){
 	}
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ; </symbol>") == 0){
+	if (strcmp(token, "<symbol> ; </symbol>") == 0)
+	{
 		// ';'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -1059,7 +1254,8 @@ bool compileDo(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileReturn(FILE *sfp, FILE *dfp){
+bool compileReturn(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileReturn");
 	// 'return' expression? ';'
 	char *token;
@@ -1070,11 +1266,14 @@ bool compileReturn(FILE *sfp, FILE *dfp){
 	incrementDepth();
 
 	token = getToken(sfp);
-	if(strcmp(token, "<keyword> return </keyword>") == 0){
+	if (strcmp(token, "<keyword> return </keyword>") == 0)
+	{
 		// 'return'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -1085,11 +1284,14 @@ bool compileReturn(FILE *sfp, FILE *dfp){
 	compileExpression(sfp, dfp);
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ; </symbol>") == 0){
+	if (strcmp(token, "<symbol> ; </symbol>") == 0)
+	{
 		// ';'
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
@@ -1102,7 +1304,8 @@ bool compileReturn(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileExpression(FILE *sfp, FILE *dfp){
+bool compileExpression(FILE *sfp, FILE *dfp)
+{
 	// term (op term)*
 	printMsg("compileExpression");
 	char *token;
@@ -1112,15 +1315,18 @@ bool compileExpression(FILE *sfp, FILE *dfp){
 	destFilePtrMoved += printTag("<expression>", dfp);
 	incrementDepth();
 
-	if(compileTerm(sfp, dfp) == false){
+	if (compileTerm(sfp, dfp) == false)
+	{
 		moveFPBack(dfp, ptrMoved);
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
 	}
 
-	while(true){
-		if(compileOp(sfp, dfp) && compileTerm(sfp, dfp)){
+	while (true)
+	{
+		if (compileOp(sfp, dfp) && compileTerm(sfp, dfp))
+		{
 			continue;
 		}
 		break;
@@ -1132,7 +1338,8 @@ bool compileExpression(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileExpressionList(FILE *sfp, FILE *dfp){
+bool compileExpressionList(FILE *sfp, FILE *dfp)
+{
 	// (expression (',' expression)* )?
 	printMsg("compileExpressionList");
 	char *token;
@@ -1142,21 +1349,26 @@ bool compileExpressionList(FILE *sfp, FILE *dfp){
 	destFilePtrMoved += printTag("<expressionList>", dfp);
 
 	token = getToken(sfp);
-	if(strcmp(token, "<symbol> ) </symbol>") == 0){
+	if (strcmp(token, "<symbol> ) </symbol>") == 0)
+	{
 		// ')'
 		destFilePtrMoved += printTag("</expressionList>", dfp);
 		return true;
 	}
 	incrementDepth();
-	
+
 	compileExpression(sfp, dfp);
 
-	while(true){
+	while (true)
+	{
 		token = getToken(sfp);
-		if(strcmp(token, "<symbol> , </symbol>") == 0){
+		if (strcmp(token, "<symbol> , </symbol>") == 0)
+		{
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
-		} else {
+		}
+		else
+		{
 			break;
 		}
 		compileExpression(sfp, dfp);
@@ -1168,7 +1380,8 @@ bool compileExpressionList(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileTerm(FILE *sfp, FILE *dfp){
+bool compileTerm(FILE *sfp, FILE *dfp)
+{
 	// integerConstant | stringConstant | keywordConstant | varName | varName '[' expression ']' | subroutineCall | '(' expression ')' | unaryOp term
 	printMsg("compileTerm");
 	char *token;
@@ -1178,43 +1391,49 @@ bool compileTerm(FILE *sfp, FILE *dfp){
 	int destFilePtrMovedForTermTag = printTag("<term>", dfp);
 	incrementDepth();
 
-	
-	if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isIntConstTag, &ptrMoved, &destFilePtrMoved)){
+	if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isIntConstTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// integerConstant
-	} 
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isStringConstTag, &ptrMoved, &destFilePtrMoved)){
+	}
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isStringConstTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// stringConstant
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileKeywordConstant(sfp, dfp)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileKeywordConstant(sfp, dfp))
+	{
 		// keywordConstant
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileSubroutineCall(sfp, dfp)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileSubroutineCall(sfp, dfp))
+	{
 		// subroutineCall
 	}
 	else if (
 		ptrMoved = 0, destFilePtrMoved = 0,
-		compileTag(sfp, dfp, isBracketOpenTag, &ptrMoved, &destFilePtrMoved) && 
-		compileExpression(sfp, dfp) &&
-		compileTag(sfp, dfp, isBracketCloseTag, &ptrMoved, &destFilePtrMoved)
-	){
+		compileTag(sfp, dfp, isBracketOpenTag, &ptrMoved, &destFilePtrMoved) &&
+			compileExpression(sfp, dfp) &&
+			compileTag(sfp, dfp, isBracketCloseTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '(' expression ')'
-	} 
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileUnaryOp(sfp, dfp) && compileTerm(sfp, dfp)){
+	}
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileUnaryOp(sfp, dfp) && compileTerm(sfp, dfp))
+	{
 		// unaryOp term
 	}
-	else if(
-		ptrMoved = 0, destFilePtrMoved = 0, 
+	else if (
+		ptrMoved = 0, destFilePtrMoved = 0,
 		compileTag(sfp, dfp, isIdentifierTag, &ptrMoved, &destFilePtrMoved) &&
-		compileTag(sfp, dfp, isSquareBracketOpenTag, &ptrMoved, &destFilePtrMoved) && 
-		compileExpression(sfp, dfp) &&
-		compileTag(sfp, dfp, isSquareBracketCloseTag, &ptrMoved, &destFilePtrMoved)
-	){
+			compileTag(sfp, dfp, isSquareBracketOpenTag, &ptrMoved, &destFilePtrMoved) &&
+			compileExpression(sfp, dfp) &&
+			compileTag(sfp, dfp, isSquareBracketCloseTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// varName '[' expression ']'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isIdentifierTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isIdentifierTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// varName
 	}
-	else {
+	else
+	{
 		moveFPBack(dfp, destFilePtrMovedForTermTag);
 		decrementDepth();
 		return false;
@@ -1226,7 +1445,8 @@ bool compileTerm(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileUnaryOp(FILE *sfp, FILE *dfp){
+bool compileUnaryOp(FILE *sfp, FILE *dfp)
+{
 	// '-' | '~'
 	printMsg("compileUnaryOp");
 	char *token;
@@ -1236,18 +1456,20 @@ bool compileUnaryOp(FILE *sfp, FILE *dfp){
 	int destFilePtrMovedForUnaryOpTag = printTag("<unaryOp>", dfp);
 	incrementDepth();
 
-	if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isMinusSignTag, &ptrMoved, &destFilePtrMoved)){
+	if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isMinusSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '-'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isTildaSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isTildaSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '~'
 	}
-	else {
+	else
+	{
 		moveFPBack(dfp, destFilePtrMovedForUnaryOpTag);
 		decrementDepth();
 		return false;
 	}
-
 
 	decrementDepth();
 	printTag("</unaryOp>", dfp);
@@ -1255,117 +1477,142 @@ bool compileUnaryOp(FILE *sfp, FILE *dfp){
 	return true;
 }
 
-bool compileOp(FILE *sfp, FILE *dfp){
+bool compileOp(FILE *sfp, FILE *dfp)
+{
 	printMsg("compileOp");
 	// '+' | '-' | '*' | '/' | '&' | '|' | '<' | '>' | '='
 	char *token;
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
 
-	if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isPlusSignTag, &ptrMoved, &destFilePtrMoved)){
+	if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isPlusSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '+'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isMinusSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isMinusSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '-'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isMultiplySignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isMultiplySignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '*'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isDivideSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isDivideSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '/'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isAmpersandSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isAmpersandSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '&'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isVerticalBarSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isVerticalBarSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '|'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isLessThanSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isLessThanSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '<'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isGreaterThanSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isGreaterThanSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '>'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isEqualSignTag, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isEqualSignTag, &ptrMoved, &destFilePtrMoved))
+	{
 		// '='
 	}
-	else {
+	else
+	{
 		return false;
 	}
 
 	return true;
 }
 
-bool compileKeywordConstant(FILE *sfp, FILE *dfp){
+bool compileKeywordConstant(FILE *sfp, FILE *dfp)
+{
 	// 'true' | 'false' | 'null' | 'this'
 	char *token;
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
 
-
-	if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isTrueKeywordConstant, &ptrMoved, &destFilePtrMoved)){
+	if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isTrueKeywordConstant, &ptrMoved, &destFilePtrMoved))
+	{
 		// 'true'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isFalseKeywordConstant, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isFalseKeywordConstant, &ptrMoved, &destFilePtrMoved))
+	{
 		// 'false'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isNullKeywordConstant, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isNullKeywordConstant, &ptrMoved, &destFilePtrMoved))
+	{
 		// 'null'
 	}
-	else if(ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isThisKeywordConstant, &ptrMoved, &destFilePtrMoved)){
+	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isThisKeywordConstant, &ptrMoved, &destFilePtrMoved))
+	{
 		// 'this'
 	}
-	else {
+	else
+	{
 		return false;
 	}
 
 	return true;
 }
 
-bool isKeywordTag(char *token){
+bool isKeywordTag(char *token)
+{
 	char tokencpy[100];
 	strcpy(tokencpy, token);
-	
+
 	tokencpy[9] = '\0';
 	return strcmp(tokencpy, "<keyword>") == 0;
 }
 
-bool isSymbolTag(char *token){
+bool isSymbolTag(char *token)
+{
 	char tokencpy[100];
 	strcpy(tokencpy, token);
 	tokencpy[8] = '\0';
 	return strcmp(tokencpy, "<symbol>") == 0;
 }
 
-bool isIdentifierTag(char *token){
+bool isIdentifierTag(char *token)
+{
 	char tokencpy[100];
 	strcpy(tokencpy, token);
 	tokencpy[12] = '\0';
 	return strcmp(tokencpy, "<identifier>") == 0;
 }
 
-bool isIntConstTag(char *token){
+bool isIntConstTag(char *token)
+{
 	char tokencpy[100];
 	strcpy(tokencpy, token);
 	tokencpy[17] = '\0';
 	return strcmp(tokencpy, "<integerConstant>") == 0;
 }
 
-bool isStringConstTag(char *token){
+bool isStringConstTag(char *token)
+{
 	char tokencpy[100];
 	strcpy(tokencpy, token);
 	tokencpy[16] = '\0';
 	return strcmp(tokencpy, "<stringConstant>") == 0;
 }
 
-bool compileTag(FILE *sfp, FILE *dfp, bool (*compare)(char *token), int *ptrMoved, int *destFilePtrMoved){
+bool compileTag(FILE *sfp, FILE *dfp, bool (*compare)(char *token), int *ptrMoved, int *destFilePtrMoved)
+{
 	char *token;
 
 	token = getToken(sfp);
-	if(compare(token)){
+	if (compare(token))
+	{
 		*ptrMoved += moveFPToNextToken(sfp);
 		*destFilePtrMoved += printTag(token, dfp);
-	} else {
+	}
+	else
+	{
 		moveFPBack(dfp, *destFilePtrMoved);
 		moveFPBack(sfp, *ptrMoved);
 		return false;
@@ -1374,76 +1621,92 @@ bool compileTag(FILE *sfp, FILE *dfp, bool (*compare)(char *token), int *ptrMove
 	return true;
 }
 
-bool isSquareBracketOpenTag(char *token){
+bool isSquareBracketOpenTag(char *token)
+{
 	return strcmp(token, "<symbol> [ </symbol>") == 0;
 }
 
-bool isSquareBracketCloseTag(char *token){
+bool isSquareBracketCloseTag(char *token)
+{
 	return strcmp(token, "<symbol> ] </symbol>") == 0;
 }
 
-bool isBracketOpenTag(char *token){
+bool isBracketOpenTag(char *token)
+{
 	return strcmp(token, "<symbol> ( </symbol>") == 0;
 }
 
-bool isBracketCloseTag(char *token){
+bool isBracketCloseTag(char *token)
+{
 	return strcmp(token, "<symbol> ) </symbol>") == 0;
 }
 
-bool isPlusSignTag(char *token){
+bool isPlusSignTag(char *token)
+{
 	return strcmp(token, "<symbol> + </symbol>") == 0;
 }
 
-bool isMinusSignTag(char *token){
+bool isMinusSignTag(char *token)
+{
 	return strcmp(token, "<symbol> - </symbol>") == 0;
 }
 
-bool isMultiplySignTag(char *token){
+bool isMultiplySignTag(char *token)
+{
 	return strcmp(token, "<symbol> * </symbol>") == 0;
 }
 
-bool isDivideSignTag(char *token){
+bool isDivideSignTag(char *token)
+{
 	return strcmp(token, "<symbol> / </symbol>") == 0;
 }
 
-bool isAmpersandSignTag(char *token){
+bool isAmpersandSignTag(char *token)
+{
 	return strcmp(token, "<symbol> &amp; </symbol>") == 0;
 }
 
-bool isVerticalBarSignTag(char *token){
+bool isVerticalBarSignTag(char *token)
+{
 	return strcmp(token, "<symbol> | </symbol>") == 0;
 }
 
-bool isLessThanSignTag(char *token){
+bool isLessThanSignTag(char *token)
+{
 	return strcmp(token, "<symbol> &lt; </symbol>") == 0;
 }
 
-bool isGreaterThanSignTag(char *token){
+bool isGreaterThanSignTag(char *token)
+{
 	return strcmp(token, "<symbol> &gt; </symbol>") == 0;
 }
 
-bool isEqualSignTag(char *token){
+bool isEqualSignTag(char *token)
+{
 	return strcmp(token, "<symbol> = </symbol>") == 0;
 }
 
-bool isTildaSignTag(char *token){
+bool isTildaSignTag(char *token)
+{
 	return strcmp(token, "<symbol> ~ </symbol>") == 0;
 }
 
-bool isTrueKeywordConstant(char *token){
+bool isTrueKeywordConstant(char *token)
+{
 	return strcmp(token, "<keyword> true </keyword>") == 0;
 }
 
-bool isFalseKeywordConstant(char *token){
+bool isFalseKeywordConstant(char *token)
+{
 	return strcmp(token, "<keyword> false </keyword>") == 0;
 }
 
-bool isNullKeywordConstant(char *token){
+bool isNullKeywordConstant(char *token)
+{
 	return strcmp(token, "<keyword> null </keyword>") == 0;
 }
 
-bool isThisKeywordConstant(char *token){
+bool isThisKeywordConstant(char *token)
+{
 	return strcmp(token, "<keyword> this </keyword>") == 0;
 }
-
-

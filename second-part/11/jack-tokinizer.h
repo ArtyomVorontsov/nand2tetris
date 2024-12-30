@@ -1,9 +1,5 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <ctype.h>
 
 enum TOKEN_TYPE {
 	UNKNOWN,
