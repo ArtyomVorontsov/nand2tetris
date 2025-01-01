@@ -3,6 +3,42 @@
 #include <stdlib.h>
 #include <glib.h>
 
+GList *symbolTableStackPush(GList *stack, gpointer data)
+{
+    printf("Symbol table depth (push): %d\n", g_list_length(stack) + 1);
+    // TODO: move to separate stack component
+    return g_list_prepend(stack, data); // Prepend adds the element to the front
+}
+
+GList *symbolTableStackPop(GList *stack, gpointer *data)
+{
+    printf("\nSymbol table print:\n");
+    if (stack != NULL)
+        ((struct SymbolTable *)stack->data)->print((struct SymbolTable *)stack->data);
+    printf("Symbol table depth (pop): %d\n", g_list_length(stack));
+
+    // TODO: move to separate stack component
+    if (stack != NULL)
+    {
+        *data = stack->data;       // Get the data from the top element
+        GList *next = stack->next; // Get the rest of the stack
+        g_list_free_1(stack);      // Free the top node
+        return next;               // Return the rest of the stack
+    }
+    *data = NULL; // If stack is empty, return NULL
+    return NULL;
+}
+
+gpointer symbolTableStackPeek(GList *stack)
+{
+    // TODO: move to separate stack component
+    if (stack != NULL)
+    {
+        return stack->data; // Return the data at the top of the stack
+    }
+    return NULL; // Return NULL if stack is empty
+}
+
 struct SymbolTable *createSymbolTable()
 {
     struct SymbolTable *symbolTable = malloc(sizeof(struct SymbolTable));
@@ -28,16 +64,15 @@ void define(struct SymbolTable *this, char *name, char *type, enum KIND kind)
 {
     struct SymbolTableRecord *symbolTableRecord = malloc(sizeof(struct SymbolTableRecord));
 
-    symbolTableRecord->name = malloc(strlen(name) * sizeof(char));
+    symbolTableRecord->name = malloc((strlen(name) + 10) * sizeof(char));
     strcpy(symbolTableRecord->name, name);
-    symbolTableRecord->type = malloc(strlen(type) * sizeof(char));
+    symbolTableRecord->type = malloc((strlen(type) + 10) * sizeof(char));
     strcpy(symbolTableRecord->type, type);
     symbolTableRecord->kind = kind;
 
     this->list = g_list_append(this->list, symbolTableRecord);
 
-
-    GList *list = NULL; 
+    GList *list = NULL;
 }
 
 int varCount(struct SymbolTable *this, enum KIND kind)
@@ -129,11 +164,21 @@ int indexOf(struct SymbolTable *this, char *name)
 
 void print(struct SymbolTable *this)
 {
-    GList *list = this->list;
-    while (list)
+    if (this)
     {
-        struct SymbolTableRecord *data = ((struct SymbolTableRecord *)list->data);
-        printf("name: %s \ntype: %s \nkind: %d\n\n", data->name, data->type, data->kind);
-        list = list->next;
+        GList *list = this->list;
+        while (list)
+        {
+            struct SymbolTableRecord *data = ((struct SymbolTableRecord *)list->data);
+
+            char *kind[] = {
+                "STATIC",
+                "FIELD",
+                "ARG",
+                "VAR"};
+
+            printf("name: %s \ntype: %s \nkind: %s\n\n", data->name, data->type, kind[data->kind]);
+            list = list->next;
+        }
     }
 }
