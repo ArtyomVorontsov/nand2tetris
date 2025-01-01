@@ -1,10 +1,20 @@
 #include "./symbol-table.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <glib.h>
 
 struct SymbolTable *createSymbolTable()
 {
     struct SymbolTable *symbolTable = malloc(sizeof(struct SymbolTable));
+
+    symbolTable->define = define;
+    symbolTable->indexOf = indexOf;
+    symbolTable->typeOf = typeOf;
+    symbolTable->print = print;
+    symbolTable->kindOf = kindOf;
+    symbolTable->reset = reset;
+    symbolTable->varCount = varCount;
+    symbolTable->list = NULL;
 
     return symbolTable;
 }
@@ -18,7 +28,16 @@ void define(struct SymbolTable *this, char *name, char *type, enum KIND kind)
 {
     struct SymbolTableRecord *symbolTableRecord = malloc(sizeof(struct SymbolTableRecord));
 
+    symbolTableRecord->name = malloc(strlen(name) * sizeof(char));
+    strcpy(symbolTableRecord->name, name);
+    symbolTableRecord->type = malloc(strlen(type) * sizeof(char));
+    strcpy(symbolTableRecord->type, type);
+    symbolTableRecord->kind = kind;
+
     this->list = g_list_append(this->list, symbolTableRecord);
+
+
+    GList *list = NULL; 
 }
 
 int varCount(struct SymbolTable *this, enum KIND kind)
@@ -106,4 +125,15 @@ int indexOf(struct SymbolTable *this, char *name)
     }
 
     return index;
+}
+
+void print(struct SymbolTable *this)
+{
+    GList *list = this->list;
+    while (list)
+    {
+        struct SymbolTableRecord *data = ((struct SymbolTableRecord *)list->data);
+        printf("name: %s \ntype: %s \nkind: %d\n\n", data->name, data->type, data->kind);
+        list = list->next;
+    }
 }

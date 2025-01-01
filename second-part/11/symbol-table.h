@@ -14,9 +14,10 @@ struct SymbolTable
     void (*reset)(struct SymbolTable *this);
     void (*define)(struct SymbolTable *this, char *name, char *type, enum KIND kind);
     int (*varCount)(struct SymbolTable *this, enum KIND kind);
-    enum KIND (*kindOf)(struct SymbolTable *this, char *name);
+    int (*kindOf)(struct SymbolTable *this, char *name);
     char *(*typeOf)(struct SymbolTable *this, char *name);
     int (*indexOf)(struct SymbolTable *this, char *name);
+    void (*print)();
 };
 
 struct SymbolTableRecord
@@ -33,3 +34,4 @@ int varCount(struct SymbolTable *this, enum KIND kind);
 int kindOf(struct SymbolTable *this, char *name);
 char *typeOf(struct SymbolTable *this, char *name);
 int indexOf(struct SymbolTable *this, char *name);
+void print(struct SymbolTable *this);

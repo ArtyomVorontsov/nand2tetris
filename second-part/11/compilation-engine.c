@@ -1,16 +1,29 @@
 #include "./compilation-engine.h"
+#include "./symbol-table.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
 #define DEV_MODE true
+#define SYMBOL_TABLE true
 
 void printMsg(char *msg)
 {
 	if (DEV_MODE)
 	{
 		printf("dev: %s\n", msg);
+	}
+}
+
+void printMsgWithTemplate(char *template, char *msg)
+{
+
+	if (DEV_MODE)
+	{
+		char buffer[1000];
+		strcpy(buffer, "dev: ");
+		printf(strcat(buffer, template), msg);
 	}
 }
 
@@ -61,14 +74,14 @@ int depth = 0;
 
 void incrementDepth()
 {
-	printf("inc depth %d \n", depth);
+	printMsgWithTemplate("inc depth %d \n", depth);
 	depth++;
 }
 
 void decrementDepth()
 {
 	depth--;
-	printf("dec depth %d \n", depth);
+	printMsgWithTemplate("dec depth %d \n", depth);
 }
 
 int getDepth()
@@ -107,6 +120,12 @@ bool compileClass(FILE *sfp, FILE *dfp)
 	int destFilePtrMoved = 0;
 	char *token;
 
+	struct SymbolTable *classSymbolTable = NULL;
+	if (SYMBOL_TABLE)
+	{
+		classSymbolTable = createSymbolTable();
+	}
+
 	destFilePtrMoved += printTag("<class>", dfp);
 	incrementDepth();
 
@@ -133,6 +152,11 @@ bool compileClass(FILE *sfp, FILE *dfp)
 		className = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		if (SYMBOL_TABLE)
+		{
+			classSymbolTable->define(classSymbolTable, className, "CLASS", VAR);
+		}
 	}
 	else
 	{
@@ -192,6 +216,11 @@ bool compileClass(FILE *sfp, FILE *dfp)
 
 	decrementDepth();
 	printTag("</class>", dfp);
+
+	if (SYMBOL_TABLE)
+	{
+		classSymbolTable->print(classSymbolTable);
+	}
 	return true;
 };
 
@@ -705,6 +734,11 @@ bool compileVarDec(FILE *sfp, FILE *dfp)
 		// varName
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		if (SYMBOL_TABLE)
+		{
+			// register variable here
+		}
 	}
 	else
 	{
