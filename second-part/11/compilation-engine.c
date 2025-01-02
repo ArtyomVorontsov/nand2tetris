@@ -337,8 +337,14 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp)
 			if (isIdentifierTag(token))
 			{
 				// varName
+				nameForSymbolTable = token;
 				ptrMoved += moveFPToNextToken(sfp);
 				destFilePtrMoved += printTag(token, dfp);
+
+				if (SYMBOL_TABLE)
+				{
+					((struct SymbolTable *)symbolTableStackPeek(SYMBOL_TABLES_STACK))->define(symbolTableStackPeek(SYMBOL_TABLES_STACK), nameForSymbolTable, typeForSymbolTable, kindForSymbolTable);
+				}
 			}
 			else
 			{
@@ -384,9 +390,14 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 	char *token;
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
+	char *nameForSymbolTable = NULL;
+	char *typeForSymbolTable = NULL;
+	enum KIND kindForSymbolTable = SUBROUTINE;
 
 	destFilePtrMoved += printTag("<subroutineDec>", dfp);
+
 	incrementDepth();
+	openScope();
 
 	token = getToken(sfp);
 	if (
@@ -403,6 +414,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
+		closeScope();
 		return false;
 	}
 
@@ -410,6 +422,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 	if (strcmp(token, "<keyword> void </keyword>") == 0 || isIdentifierTag(token))
 	{
 		// ('void' | type)
+		typeForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
 	}
@@ -418,6 +431,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
+		closeScope();
 		return false;
 	}
 
@@ -425,6 +439,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// subroutineName
+		nameForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
 	}
@@ -433,6 +448,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
+		closeScope();
 		return false;
 	}
 
@@ -448,6 +464,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
+		closeScope();
 		return false;
 	}
 
@@ -466,6 +483,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
+		closeScope();
 		return false;
 	}
 
@@ -474,10 +492,18 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 		moveFPBack(dfp, destFilePtrMoved);
 		moveFPBack(sfp, ptrMoved);
 		decrementDepth();
+		closeScope();
 		return false;
 	}
 
 	decrementDepth();
+	closeScope();
+
+	if (SYMBOL_TABLE)
+	{
+		((struct SymbolTable *)symbolTableStackPeek(SYMBOL_TABLES_STACK))->define(symbolTableStackPeek(SYMBOL_TABLES_STACK), nameForSymbolTable, typeForSymbolTable, kindForSymbolTable);
+	}
+
 	printTag("</subroutineDec>", dfp);
 	return true;
 }
@@ -490,6 +516,9 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 	int i = 0;
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
+	char *nameForSymbolTable = NULL;
+	char *typeForSymbolTable = NULL;
+	enum KIND kindForSymbolTable = ARG;
 
 	destFilePtrMoved += printTag("<parameterList>", dfp);
 
@@ -507,6 +536,7 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 	if (isKeywordTag(token))
 	{
 		// type
+		typeForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
 	}
@@ -522,6 +552,7 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// varName
+		nameForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		printTag(token, dfp);
 	}
@@ -531,6 +562,11 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 		moveFPBack(dfp, destFilePtrMoved);
 		decrementDepth();
 		return false;
+	}
+
+	if (SYMBOL_TABLE)
+	{
+		((struct SymbolTable *)symbolTableStackPeek(SYMBOL_TABLES_STACK))->define(symbolTableStackPeek(SYMBOL_TABLES_STACK), nameForSymbolTable, typeForSymbolTable, kindForSymbolTable);
 	}
 
 	while (true)
@@ -556,6 +592,7 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 		if (isKeywordTag(token))
 		{
 			// type
+			typeForSymbolTable = token;
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
 		}
@@ -571,6 +608,7 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 		if (isIdentifierTag(token))
 		{
 			// varName
+			nameForSymbolTable = token;
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
 		}
@@ -580,6 +618,11 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 			moveFPBack(dfp, destFilePtrMoved);
 			decrementDepth();
 			return false;
+		}
+
+		if (SYMBOL_TABLE)
+		{
+			((struct SymbolTable *)symbolTableStackPeek(SYMBOL_TABLES_STACK))->define(symbolTableStackPeek(SYMBOL_TABLES_STACK), nameForSymbolTable, typeForSymbolTable, kindForSymbolTable);
 		}
 
 		i++;
@@ -600,7 +643,6 @@ bool compileSubroutineBody(FILE *sfp, FILE *dfp)
 
 	destFilePtrMoved += printTag("<subroutineBody>", dfp);
 	incrementDepth();
-	openScope();
 
 	token = getToken(sfp);
 	if (strcmp(token, "<symbol> { </symbol>") == 0)
@@ -638,7 +680,6 @@ bool compileSubroutineBody(FILE *sfp, FILE *dfp)
 	}
 
 	decrementDepth();
-	closeScope();
 	printTag("</subroutineBody>", dfp);
 	return true;
 }

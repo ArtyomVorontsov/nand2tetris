@@ -5,17 +5,18 @@
 
 GList *symbolTableStackPush(GList *stack, gpointer data)
 {
-    printf("Symbol table depth (push): %d\n", g_list_length(stack) + 1);
+    printf("Symbol table depth (push): %d\n\n", g_list_length(stack) + 1);
     // TODO: move to separate stack component
     return g_list_prepend(stack, data); // Prepend adds the element to the front
 }
 
 GList *symbolTableStackPop(GList *stack, gpointer *data)
 {
-    printf("\nSymbol table print:\n");
     if (stack != NULL)
+    {
         ((struct SymbolTable *)stack->data)->print((struct SymbolTable *)stack->data);
-    printf("Symbol table depth (pop): %d\n", g_list_length(stack));
+    }
+    printf("Symbol table depth (pop): %d\n\n", g_list_length(stack));
 
     // TODO: move to separate stack component
     if (stack != NULL)
@@ -64,13 +65,14 @@ void define(struct SymbolTable *this, char *name, char *type, enum KIND kind)
 {
     struct SymbolTableRecord *symbolTableRecord = malloc(sizeof(struct SymbolTableRecord));
 
-    symbolTableRecord->name = malloc((strlen(name) + 10) * sizeof(char));
+    symbolTableRecord->name = malloc((strlen(name) + 1) * sizeof(char));
     strcpy(symbolTableRecord->name, name);
-    symbolTableRecord->type = malloc((strlen(type) + 10) * sizeof(char));
+    symbolTableRecord->type = malloc((strlen(type) + 1) * sizeof(char));
     strcpy(symbolTableRecord->type, type);
     symbolTableRecord->kind = kind;
 
     this->list = g_list_append(this->list, symbolTableRecord);
+    symbolTableRecord->index = g_list_index(this->list, symbolTableRecord);
 
     GList *list = NULL;
 }
@@ -166,7 +168,16 @@ void print(struct SymbolTable *this)
 {
     if (this)
     {
+        printf("Symbol table print:\n");
+
+        if (!this->list)
+        {
+            printf("Table is empty.\n\n");
+            return;
+        }
+
         GList *list = this->list;
+        printf("============\n");
         while (list)
         {
             struct SymbolTableRecord *data = ((struct SymbolTableRecord *)list->data);
@@ -175,10 +186,13 @@ void print(struct SymbolTable *this)
                 "STATIC",
                 "FIELD",
                 "ARG",
-                "VAR"};
+                "VAR",
+                "CLASS",
+                "SUBROUTINE"};
 
-            printf("name: %s \ntype: %s \nkind: %s\n\n", data->name, data->type, kind[data->kind]);
+            printf("name: %s \ntype: %s \nkind: %s\nindex: %d\n============\n", data->name, data->type, kind[data->kind], data->index);
             list = list->next;
         }
+        printf("\n");
     }
 }

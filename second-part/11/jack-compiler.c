@@ -49,9 +49,6 @@ int main(int argc, char **argv)
 		SourceFileName = destFileName;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(destFileName);
 		destFileName = getDestFileName(filePath, ".xml");
-		printf("SourceFileName: %s\n", SourceFileName);
-		printf("SourceFileNameWithoutExt: %s\n", SourceFileNameWithoutExt);
-		printf("destFileName: %s\n", destFileName);
 		sfp = fopen(SourceFileName, "r");
 		dfp = fopen(destFileName, "w");
 		compilationEngine(sfp, dfp);

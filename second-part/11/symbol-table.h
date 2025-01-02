@@ -5,7 +5,9 @@ enum KIND
     STATIC,
     FIELD,
     ARG,
-    VAR
+    VAR,
+    CLASS,
+    SUBROUTINE
 };
 
 struct SymbolTable
@@ -25,6 +27,7 @@ struct SymbolTableRecord
     char *name;
     char *type;
     enum KIND kind;
+    int index; 
 };
 
 struct SymbolTable *createSymbolTable();
