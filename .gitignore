@@ -6,3 +6,5 @@ text.vm
 a.hack
 .gdb_history
 *.xml
+test-result
+test

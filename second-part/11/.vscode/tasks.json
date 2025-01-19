@@ -7,12 +7,13 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                "-O0",
                 "${workspaceFolder}/*.c",
                 "-o",
                 "${workspaceFolder}/jack-compiler.out",
                 "-I/usr/include/glib-2.0",
                 "-I/usr/lib/x86_64-linux-gnu/glib-2.0/include",
-                "-lglib-2.0",
+                "-lglib-2.0", 
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -29,7 +30,7 @@
         {
             "type": "shell",
             "label": "clean project",
-            "command": "rm ${workspaceFolder}/*.xml",            
+            "command": "rm ${workspaceFolder}/*.xml",        
         },
     ],
     "version": "2.0.0"

@@ -7,35 +7,98 @@ GList *symbolTableStackPush(GList *stack, gpointer data)
 {
     printf("Symbol table depth (push): %d\n\n", g_list_length(stack) + 1);
     // TODO: move to separate stack component
-    return g_list_prepend(stack, data); // Prepend adds the element to the front
+    return g_list_last(g_list_append(g_list_last(stack), data)); // append adds the element to the back
 }
 
 GList *symbolTableStackPop(GList *stack, gpointer *data)
 {
+
+    GList *stackFirstElement = g_list_first(stack);
+    GList *stackLastElement = g_list_last(stack);
+    printf("Symbol table depth (pop): %d\n\n", g_list_length(stackFirstElement));
     if (stack != NULL)
     {
-        ((struct SymbolTable *)stack->data)->print((struct SymbolTable *)stack->data);
+        ((struct SymbolTable *)stackLastElement->data)->print((struct SymbolTable *)stackLastElement->data);
     }
-    printf("Symbol table depth (pop): %d\n\n", g_list_length(stack));
 
     // TODO: move to separate stack component
-    if (stack != NULL)
+    if (stackLastElement != NULL)
     {
-        *data = stack->data;       // Get the data from the top element
-        GList *next = stack->next; // Get the rest of the stack
-        g_list_free_1(stack);      // Free the top node
-        return next;               // Return the rest of the stack
+        GList *prev = stackLastElement->prev; // Get the rest of the stack
+        if (prev)
+            prev->next = NULL;
+        return prev; // Return the rest of the stack
     }
     *data = NULL; // If stack is empty, return NULL
     return NULL;
 }
 
+void registerSymbolInSymbolTableStack(char *token, enum USAGE_TYPE usageType, char *typeForSymbolTable, enum KIND kindForSymbolTable, GList *symbolTableStack)
+{
+
+    char *nameForSymbolTable = token;
+
+    if (usageType == USAGE)
+    {
+        // If identifier is used in some expression that means kind and type should be already in symbol table,
+        // so we need to find declared record in symbol table
+
+        GList *symbolTablesStackPtr = g_list_last(symbolTableStack);
+        int stackDepth = g_list_length(g_list_first(symbolTablesStackPtr));
+        while (symbolTablesStackPtr)
+        {
+
+            if (stackDepth < 1)
+            {
+                printf("Variable %s definition not found!\n", token);
+            }
+
+            struct SymbolTable *symbolTable = (struct SymbolTable *)symbolTablesStackPtr->data;
+
+            int kindForSymbolTableFromSymbolTable = symbolTable->kindOf(symbolTable, nameForSymbolTable);
+            char *typeForSymbolTableFromSymbolTable = symbolTable->typeOf(symbolTable, nameForSymbolTable);
+
+            if (kindForSymbolTableFromSymbolTable != UNDEFINED && typeForSymbolTableFromSymbolTable)
+            {
+                struct SymbolTable *currentSymbolTable = g_list_last(symbolTableStack)->data;
+
+                currentSymbolTable->define(currentSymbolTable,
+                                           nameForSymbolTable,
+                                           typeForSymbolTableFromSymbolTable,
+                                           kindForSymbolTableFromSymbolTable,
+                                           usageType,
+                                           symbolTableStack);
+                break;
+            }
+            symbolTablesStackPtr = symbolTablesStackPtr->prev;
+            stackDepth--;
+        }
+    }
+    else if (usageType == DECLARATION)
+    {
+        // If identifier is declared then we write declaration to symbol table
+        struct SymbolTable *symbolTable = symbolTableStackPeek(symbolTableStack);
+        symbolTable->define(symbolTable, nameForSymbolTable, typeForSymbolTable, kindForSymbolTable, usageType, symbolTableStack);
+    }
+}
+
+void revertSymbolInSymbolTableStack(GList *symbolTableStack, int amount)
+{
+    struct SymbolTable *symbolTable = g_list_last(symbolTableStack)->data;
+    while (amount)
+    {
+        symbolTable->revert(symbolTable);
+        amount--;
+    }
+}
+
 gpointer symbolTableStackPeek(GList *stack)
 {
+    GList *stackLastElement = g_list_last(stack);
     // TODO: move to separate stack component
-    if (stack != NULL)
+    if (stackLastElement != NULL)
     {
-        return stack->data; // Return the data at the top of the stack
+        return stackLastElement->data; // Return the data at the top of the stack
     }
     return NULL; // Return NULL if stack is empty
 }
@@ -47,10 +110,11 @@ struct SymbolTable *createSymbolTable()
     symbolTable->define = define;
     symbolTable->indexOf = indexOf;
     symbolTable->typeOf = typeOf;
-    symbolTable->print = print;
+    symbolTable->print = printSymbolTable;
     symbolTable->kindOf = kindOf;
     symbolTable->reset = reset;
     symbolTable->varCount = varCount;
+    symbolTable->revert = revert;
     symbolTable->list = NULL;
 
     return symbolTable;
@@ -61,21 +125,31 @@ void reset(struct SymbolTable *this)
     g_list_free_full(this->list, (GDestroyNotify)g_free);
 }
 
-void define(struct SymbolTable *this, char *name, char *type, enum KIND kind)
+struct SymbolTable *define(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, GList *SYMBOL_TABLES_STACK)
 {
     struct SymbolTableRecord *symbolTableRecord = malloc(sizeof(struct SymbolTableRecord));
 
-    symbolTableRecord->name = malloc((strlen(name) + 1) * sizeof(char));
-    strcpy(symbolTableRecord->name, name);
-    symbolTableRecord->type = malloc((strlen(type) + 1) * sizeof(char));
-    strcpy(symbolTableRecord->type, type);
+    symbolTableRecord->name = g_strdup(name);
+    symbolTableRecord->type = g_strdup(type);
     symbolTableRecord->kind = kind;
-
+    symbolTableRecord->usage = usage;
     this->list = g_list_append(this->list, symbolTableRecord);
-    symbolTableRecord->index = g_list_index(this->list, symbolTableRecord);
+    symbolTableRecord->index = this->indexOf(this, symbolTableRecord->name);
 
-    GList *list = NULL;
+
+    return this;
 }
+
+struct SymbolTable *revert(struct SymbolTable *this)
+{
+    GList *last = g_list_last(this->list);
+    if (last->prev)
+    {
+        last->prev->next = NULL;
+    }
+
+    return this;
+};
 
 int varCount(struct SymbolTable *this, enum KIND kind)
 {
@@ -94,14 +168,14 @@ int varCount(struct SymbolTable *this, enum KIND kind)
     return count;
 }
 
-int kindOf(struct SymbolTable *this, char *name)
+enum KIND kindOf(struct SymbolTable *this, char *name)
 {
     GList *list = g_list_first(this->list);
 
     struct SymbolTableRecord *foundListItem = NULL;
     while (list)
     {
-        if (((struct SymbolTableRecord *)list->data)->name == name)
+        if (strcmp(((struct SymbolTableRecord *)list->data)->name, name) == 0)
         {
             foundListItem = list->data;
             break;
@@ -111,9 +185,8 @@ int kindOf(struct SymbolTable *this, char *name)
 
     if (foundListItem == NULL)
     {
-        return -1;
+        return UNDEFINED;
     }
-
     return foundListItem->kind;
 }
 
@@ -124,7 +197,7 @@ char *typeOf(struct SymbolTable *this, char *name)
     struct SymbolTableRecord *foundListItem = NULL;
     while (list)
     {
-        if (((struct SymbolTableRecord *)list->data)->name == name)
+        if (strcmp(((struct SymbolTableRecord *)list->data)->name, name) == 0)
         {
             foundListItem = list->data;
             break;
@@ -164,7 +237,7 @@ int indexOf(struct SymbolTable *this, char *name)
     return index;
 }
 
-void print(struct SymbolTable *this)
+void printSymbolTable(struct SymbolTable *this)
 {
     if (this)
     {
@@ -190,9 +263,60 @@ void print(struct SymbolTable *this)
                 "CLASS",
                 "SUBROUTINE"};
 
-            printf("name: %s \ntype: %s \nkind: %s\nindex: %d\n============\n", data->name, data->type, kind[data->kind], data->index);
+            char *usageType[] = {
+                "DECLARATION",
+                "USAGE"};
+
+            printf("name: %s \ntype: %s \nkind: %s\nindex: %d\nusage type: %s\n============\n", data->name, data->type, kind[data->kind], data->index, usageType[data->usage]);
             list = list->next;
         }
         printf("\n");
     }
+}
+
+void checkSymbolTableValidity(struct SymbolTable *st, int index)
+{
+    if (st->kindOf != kindOf)
+    {
+        printf("kindOf pointer is lost");
+        exit(1);
+    }
+    if (st->typeOf != typeOf)
+    {
+        printf("typeOf pointer is lost");
+        exit(1);
+    }
+    if (st->varCount != varCount)
+    {
+        printf("varCount pointer is lost");
+        exit(1);
+    }
+    printf("Symbol table with index %d and length %d is valid\n", index, g_list_length(st->list));
+    printf("And variables: ");
+    GList *stl = st->list;
+
+    while (stl)
+    {
+        struct SymbolTableRecord *str = str = stl->data;
+        printf("%s, ", str->name);
+        stl = stl->next;
+    }
+    printf("\n");
+}
+
+void checkSymbolTableStackValidity(GList *sts)
+{
+    printf("Check symbol table stack\n");
+    printf("Depth: %d\n", g_list_length(sts));
+
+    GList *stsp = sts;
+    int i = 0;
+    while (stsp)
+    {
+        struct SymbolTable *st = stsp->data;
+        checkSymbolTableValidity(st, i);
+        i++;
+        stsp = stsp->prev;
+    }
+    printf("\n");
 }

@@ -9,7 +9,7 @@
             "type":"cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/jack-compiler.out",
-            "args": ["test-programs/Square"],
+            "args": ["test-programs/programs/Square/Square.jack"],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],

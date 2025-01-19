@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include "./symbol-table.h"
 
 void compilationEngine(FILE *sfp, FILE *dfp);
 char *getToken(FILE *sfp);
@@ -10,9 +11,9 @@ void decrementDepth();
 int getDepth();
 bool isKeywordTag(char *token);
 bool isSymbolTag(char *token);
-bool isIdentifierTag(char *token);
 bool isIntConstTag(char *token);
 bool isStringConstTag(char *token);
+bool isIdentifierTag(char *token);
 
 bool compileClass(FILE *sfp, FILE *dfp);
 bool compileClassVarDec(FILE *sfp, FILE *dfp);
@@ -33,6 +34,7 @@ bool compileTerm(FILE *sfp, FILE *dfp);
 bool compileUnaryOp(FILE *sfp, FILE *dfp);
 bool compileOp(FILE *sfp, FILE *dfp);
 bool compileKeywordConstant(FILE *sfp, FILE *dfp);
+bool indexingExpression(FILE *sfp, FILE *dfp);
 void incrementDepth();
 void decrementDepth();
 int getDepth();
@@ -40,6 +42,7 @@ int printTabs(FILE *sfp);
 int printTag(char *tag, FILE *dfp);
 
 bool compileTag(FILE *sfp, FILE *dfp, bool (*compare)(char *token), int *ptrMoved, int *destFilePtrMoved);
+bool compileIdentifierTag(FILE *sfp, FILE *dfp, enum USAGE_TYPE usageType, char *typeForSymbolTable, enum KIND kindForSymbolTable, int *ptrMoved, int *destFilePtrMoved);
 bool isSquareBracketOpenTag(char *token);
 bool isBracketCloseTag(char *token);
 bool isBracketOpenTag(char *token);
@@ -58,4 +61,3 @@ bool isTrueKeywordConstant(char *token);
 bool isFalseKeywordConstant(char *token);
 bool isNullKeywordConstant(char *token);
 bool isThisKeywordConstant(char *token);
-
