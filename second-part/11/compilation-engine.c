@@ -1684,9 +1684,6 @@ bool compileUnaryOp(FILE *sfp, FILE *dfp)
 	int ptrMoved = 0;
 	int destFilePtrMoved = 0;
 
-	int destFilePtrMovedForUnaryOpTag = printTag("<unaryOp>", dfp);
-	incrementDepth();
-
 	if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isMinusSignTag, &ptrMoved, &destFilePtrMoved))
 	{
 		// '-'
@@ -1697,13 +1694,10 @@ bool compileUnaryOp(FILE *sfp, FILE *dfp)
 	}
 	else
 	{
-		moveFPBack(dfp, destFilePtrMovedForUnaryOpTag);
-		decrementDepth();
+		moveFPBack(sfp, ptrMoved);
+		moveFPBack(dfp, destFilePtrMoved);
 		return false;
 	}
-
-	decrementDepth();
-	printTag("</unaryOp>", dfp);
 
 	return true;
 }
