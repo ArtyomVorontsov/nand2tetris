@@ -66,8 +66,23 @@ int moveFPToNextToken(FILE *sfp)
 
 void moveFPBack(FILE *sfp, int x)
 {
+	int remain = x % 100;
+	int i = x / 100;
 	if (x)
-		fseek(sfp, -(x), SEEK_CUR);
+	{
+		if (x > 100)
+		{
+			do
+			{
+				fseek(sfp, -(100), SEEK_CUR);
+			} while (--i);
+			fseek(sfp, -(remain), SEEK_CUR);
+		}
+		else
+		{
+			fseek(sfp, -(x), SEEK_CUR);
+		}
+	}
 }
 
 int depth = 0;
@@ -167,11 +182,14 @@ bool compileClass(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// className
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, CLASS, SYMBOL_TABLES_STACK);
-		nameForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, CLASS, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		nameForSymbolTable = token;
 	}
 	else
 	{
@@ -205,6 +223,35 @@ bool compileClass(FILE *sfp, FILE *dfp)
 		if (compileClassVarDec(sfp, dfp) == false)
 		{
 			break;
+		}
+	}
+
+	// register all class method names
+	{
+		int ptrMoved = 0;
+		char *typeForSymbolTable;
+		while (true)
+		{
+			ptrMoved += moveFPToNextToken(sfp);
+			token = getToken(sfp);
+			if (strcmp(token, "<keyword> method </keyword>") == 0)
+			{
+				ptrMoved += moveFPToNextToken(sfp); // skip type
+				typeForSymbolTable = getToken(sfp);
+				ptrMoved += moveFPToNextToken(sfp); // thats name what we need ;)
+				token = getToken(sfp);
+
+				struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, SUBROUTINE, SYMBOL_TABLES_STACK);
+				destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+			}
+
+			// rollback
+			if (strcmp(token, "") == 0)
+			{
+				moveFPBack(sfp, ptrMoved);
+				moveFPToNextToken(sfp); // skip type
+				break;
+			}
 		}
 	}
 
@@ -291,11 +338,14 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp)
 		isIdentifierTag(token))
 	{
 		// type
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
-		typeForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		typeForSymbolTable = token;
 	}
 	else
 	{
@@ -310,11 +360,14 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// varName
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-		nameForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		nameForSymbolTable = token;
 	}
 	else
 	{
@@ -344,10 +397,13 @@ bool compileClassVarDec(FILE *sfp, FILE *dfp)
 			if (isIdentifierTag(token))
 			{
 				// varName
-				registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-				nameForSymbolTable = token;
 				ptrMoved += moveFPToNextToken(sfp);
 				destFilePtrMoved += printTag(token, dfp);
+
+				// Handle symbol table
+				struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+				destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+				nameForSymbolTable = token;
 			}
 			else
 			{
@@ -430,11 +486,14 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 	if (strcmp(token, "<keyword> void </keyword>") == 0 || isIdentifierTag(token))
 	{
 		// ('void' | type)
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
-		typeForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		typeForSymbolTable = token;
 	}
 	else
 	{
@@ -450,11 +509,14 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// subroutineName
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-		nameForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		nameForSymbolTable = token;
 	}
 	else
 	{
@@ -566,11 +628,14 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// varName
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-		nameForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		nameForSymbolTable = token;
 	}
 	else
 	{
@@ -623,11 +688,14 @@ bool compileParameterList(FILE *sfp, FILE *dfp)
 		if (isIdentifierTag(token))
 		{
 			// varName
-			symbolsRegistered++;
-			registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-			nameForSymbolTable = token;
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
+
+			// Handle symbol table
+			symbolsRegistered++;
+			struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+			destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+			nameForSymbolTable = token;
 		}
 		else
 		{
@@ -712,10 +780,13 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// 'subroutineName'
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
 	}
 	else
 	{
@@ -740,10 +811,13 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp)
 		if (isIdentifierTag(token))
 		{
 			// 'subroutineName'
-			symbolsRegistered++;
-			registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
+
+			// Handle symbol table
+			symbolsRegistered++;
+			struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
+			destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
 		}
 	}
 
@@ -821,11 +895,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token) || isKeywordTag(token))
 	{
 		// type
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, USAGE, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-		typeForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		typeForSymbolTable = token;
 	}
 	else
 	{
@@ -840,11 +917,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// varName
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-		nameForSymbolTable = token;
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		nameForSymbolTable = token;
 	}
 	else
 	{
@@ -880,11 +960,14 @@ bool compileVarDec(FILE *sfp, FILE *dfp)
 		if (isIdentifierTag(token))
 		{
 			// varName
-			symbolsRegistered++;
-			registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
-			nameForSymbolTable = token;
 			ptrMoved += moveFPToNextToken(sfp);
 			destFilePtrMoved += printTag(token, dfp);
+
+			// Handle symbol table
+			symbolsRegistered++;
+			struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, DECLARATION, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+			destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+			nameForSymbolTable = token;
 		}
 		else
 		{
@@ -984,10 +1067,13 @@ bool compileLet(FILE *sfp, FILE *dfp)
 	if (isIdentifierTag(token))
 	{
 		// 'varName'
-		symbolsRegistered++;
-		registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		symbolsRegistered++;
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, NULL, UNDEFINED, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
 	}
 	else
 	{
@@ -1853,9 +1939,13 @@ bool compileIdentifierTag(FILE *sfp, FILE *dfp, enum USAGE_TYPE usageType, char 
 	token = getToken(sfp);
 	if (isIdentifierTag(token))
 	{
-		registerSymbolInSymbolTableStack(token, usageType, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+
 		*ptrMoved += moveFPToNextToken(sfp);
 		*destFilePtrMoved += printTag(token, dfp);
+
+		// Handle symbol table
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, usageType, typeForSymbolTable, kindForSymbolTable, SYMBOL_TABLES_STACK);
+		*destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
 	}
 	else
 	{

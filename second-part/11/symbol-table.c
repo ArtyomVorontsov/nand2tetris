@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <glib.h>
 
+
 GList *symbolTableStackPush(GList *stack, gpointer data)
 {
     printf("Symbol table depth (push): %d\n\n", g_list_length(stack) + 1);
@@ -33,7 +34,7 @@ GList *symbolTableStackPop(GList *stack, gpointer *data)
     return NULL;
 }
 
-void registerSymbolInSymbolTableStack(char *token, enum USAGE_TYPE usageType, char *typeForSymbolTable, enum KIND kindForSymbolTable, GList *symbolTableStack)
+struct SymbolTableRecord *registerSymbolInSymbolTableStack(char *token, enum USAGE_TYPE usageType, char *typeForSymbolTable, enum KIND kindForSymbolTable, GList *symbolTableStack)
 {
 
     char *nameForSymbolTable = token;
@@ -48,11 +49,6 @@ void registerSymbolInSymbolTableStack(char *token, enum USAGE_TYPE usageType, ch
         while (symbolTablesStackPtr)
         {
 
-            if (stackDepth < 1)
-            {
-                printf("Variable %s definition not found!\n", token);
-            }
-
             struct SymbolTable *symbolTable = (struct SymbolTable *)symbolTablesStackPtr->data;
 
             int kindForSymbolTableFromSymbolTable = symbolTable->kindOf(symbolTable, nameForSymbolTable);
@@ -62,7 +58,7 @@ void registerSymbolInSymbolTableStack(char *token, enum USAGE_TYPE usageType, ch
             {
                 struct SymbolTable *currentSymbolTable = g_list_last(symbolTableStack)->data;
 
-                currentSymbolTable->define(currentSymbolTable,
+                return currentSymbolTable->define(currentSymbolTable,
                                            nameForSymbolTable,
                                            typeForSymbolTableFromSymbolTable,
                                            kindForSymbolTableFromSymbolTable,
@@ -72,14 +68,21 @@ void registerSymbolInSymbolTableStack(char *token, enum USAGE_TYPE usageType, ch
             }
             symbolTablesStackPtr = symbolTablesStackPtr->prev;
             stackDepth--;
+
+            if (stackDepth < 1)
+            {
+                printf("Variable %s definition not found!\n", token);
+            }
         }
     }
     else if (usageType == DECLARATION)
     {
         // If identifier is declared then we write declaration to symbol table
         struct SymbolTable *symbolTable = symbolTableStackPeek(symbolTableStack);
-        symbolTable->define(symbolTable, nameForSymbolTable, typeForSymbolTable, kindForSymbolTable, usageType, symbolTableStack);
+        return symbolTable->define(symbolTable, nameForSymbolTable, typeForSymbolTable, kindForSymbolTable, usageType, symbolTableStack);
     }
+
+    return NULL;
 }
 
 void revertSymbolInSymbolTableStack(GList *symbolTableStack, int amount)
@@ -125,7 +128,7 @@ void reset(struct SymbolTable *this)
     g_list_free_full(this->list, (GDestroyNotify)g_free);
 }
 
-struct SymbolTable *define(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, GList *SYMBOL_TABLES_STACK)
+struct SymbolTableRecord *define(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, GList *SYMBOL_TABLES_STACK)
 {
     struct SymbolTableRecord *symbolTableRecord = malloc(sizeof(struct SymbolTableRecord));
 
@@ -136,8 +139,7 @@ struct SymbolTable *define(struct SymbolTable *this, char *name, char *type, enu
     this->list = g_list_append(this->list, symbolTableRecord);
     symbolTableRecord->index = this->indexOf(this, symbolTableRecord->name);
 
-
-    return this;
+    return symbolTableRecord;
 }
 
 struct SymbolTable *revert(struct SymbolTable *this)
@@ -319,4 +321,40 @@ void checkSymbolTableStackValidity(GList *sts)
         stsp = stsp->prev;
     }
     printf("\n");
+}
+
+int printSymbolTableEntry(struct SymbolTableRecord *symbolTableRecord, FILE *dfp)
+{
+	int destFilePtrMoved = 0;
+
+	if (symbolTableRecord == NULL)
+	{
+		return destFilePtrMoved;
+	}
+
+	char *symbolTableRecordOpenTag = "<symbolTableRecord>";
+	char *symbolTableRecordCloseTag = "</symbolTableRecord>";
+	char name[100];
+	char type[100];
+	char kind[100];
+	char index[100];
+	char usage[100];
+
+	sprintf(name, "<name> %s </name>", symbolTableRecord->name);
+	sprintf(type, "<type> %s </type>", symbolTableRecord->type);
+	sprintf(kind, "<kind> %d </kind>", symbolTableRecord->kind);
+	sprintf(index, "<index> %d </index>", symbolTableRecord->index);
+	sprintf(usage, "<usage> %d </usage>", symbolTableRecord->usage);
+
+	destFilePtrMoved += printTag(symbolTableRecordOpenTag, dfp);
+	incrementDepth();
+	destFilePtrMoved += printTag(name, dfp);
+	destFilePtrMoved += printTag(type, dfp);
+	destFilePtrMoved += printTag(kind, dfp);
+	destFilePtrMoved += printTag(index, dfp);
+	destFilePtrMoved += printTag(usage, dfp);
+	decrementDepth();
+	destFilePtrMoved += printTag(symbolTableRecordCloseTag, dfp);
+
+	return destFilePtrMoved;
 }
