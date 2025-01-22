@@ -234,7 +234,8 @@ bool compileClass(FILE *sfp, FILE *dfp)
 		{
 			ptrMoved += moveFPToNextToken(sfp);
 			token = getToken(sfp);
-			if (strcmp(token, "<keyword> method </keyword>") == 0)
+			if (strcmp(token, "<keyword> method </keyword>") == 0 ||
+				strcmp(token, "<keyword> function </keyword>") == 0)
 			{
 				ptrMoved += moveFPToNextToken(sfp); // skip type
 				typeForSymbolTable = getToken(sfp);
