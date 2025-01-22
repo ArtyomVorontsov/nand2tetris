@@ -472,6 +472,13 @@ bool compileSubroutine(FILE *sfp, FILE *dfp)
 		// ('constructor' | 'function' | 'method')
 		ptrMoved += moveFPToNextToken(sfp);
 		destFilePtrMoved += printTag(token, dfp);
+
+		if (strcmp(token, "<keyword> method </keyword>") == 0)
+		{
+			// Handle "this" param for class method in symbol table
+			struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack("<keyword> this </keyword>", DECLARATION, NULL, ARG, SYMBOL_TABLES_STACK);
+			destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
+		}
 	}
 	else
 	{
@@ -1861,12 +1868,18 @@ bool compileKeywordConstant(FILE *sfp, FILE *dfp)
 	{
 		// 'null'
 	}
-	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isThisKeywordConstant, &ptrMoved, &destFilePtrMoved))
+	else if (token = getToken(sfp), ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isThisKeywordConstant, &ptrMoved, &destFilePtrMoved))
 	{
+		
 		// 'this'
+		// Handle symbol table
+		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, UNDEFINED, ARG, SYMBOL_TABLES_STACK);
+		destFilePtrMoved += printSymbolTableEntry(symbolTableRecord, dfp);
 	}
 	else
 	{
+		moveFPBack(dfp, destFilePtrMoved);
+		moveFPBack(sfp, ptrMoved);
 		return false;
 	}
 

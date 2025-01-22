@@ -37,6 +37,13 @@ struct SymbolTableRecord *registerSymbolInSymbolTableStack(char *token, enum USA
 {
 
     char *nameForSymbolTable = token;
+    int isThisKeyword = strcmp(nameForSymbolTable, "<keyword> this </keyword>") == 0;
+
+    // Handle type resolution for this keyword
+    if (isThisKeyword)
+    {
+        typeForSymbolTable = ((struct SymbolTableRecord *)(g_list_first(((struct SymbolTable *)g_list_first(symbolTableStack)->data)->list)->data))->name;
+    }
 
     if (usageType == USAGE)
     {
@@ -52,6 +59,11 @@ struct SymbolTableRecord *registerSymbolInSymbolTableStack(char *token, enum USA
 
             int kindForSymbolTableFromSymbolTable = symbolTable->kindOf(symbolTable, nameForSymbolTable);
             char *typeForSymbolTableFromSymbolTable = symbolTable->typeOf(symbolTable, nameForSymbolTable);
+
+            if (isThisKeyword)
+            {
+                typeForSymbolTableFromSymbolTable = typeForSymbolTable;
+            }
 
             if (kindForSymbolTableFromSymbolTable != UNDEFINED && typeForSymbolTableFromSymbolTable)
             {
