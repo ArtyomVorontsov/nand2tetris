@@ -10,7 +10,7 @@ char *SourceFileName;
 char *SourceFileNameWithoutExt;
 
 int main(int argc, char **argv)
-{
+                                                                                                                                                                                                                           {
 	char *filePath = *(argv + 1);
 	char *destFileName;
 	const int MAX_LINE_SIZE = 1000;

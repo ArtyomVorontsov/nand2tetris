@@ -26,7 +26,7 @@ struct SymbolTable
     int (*varCount)(struct SymbolTable *this, enum KIND kind);
     enum KIND (*kindOf)(struct SymbolTable *this, char *name);
     char *(*typeOf)(struct SymbolTable *this, char *name);
-    int (*indexOf)(struct SymbolTable *this, char *name);
+    int (*indexOf)(GList *symbolTableStack, char *name);
     void (*print)(struct SymbolTable *this);
     struct SymbolTable *(*revert)(struct SymbolTable *this);
 };
@@ -47,7 +47,7 @@ struct SymbolTableRecord *define(struct SymbolTable *this, char *name, char *typ
 int varCount(struct SymbolTable *this, enum KIND kind);
 enum KIND kindOf(struct SymbolTable *this, char *name);
 char *typeOf(struct SymbolTable *this, char *name);
-int indexOf(struct SymbolTable *this, char *name);
+int indexOf(GList *symbolTableStack, char *name);
 void printSymbolTable(struct SymbolTable *this);
 GList *symbolTableStackPush(GList *stack, gpointer data);
 GList *symbolTableStackPop(GList *stack, gpointer *data);
@@ -58,3 +58,4 @@ void revertSymbolInSymbolTableStack(GList *symbolTableStack, int amount);
 void checkSymbolTableStackValidity(GList *sts);
 void checkSymbolTableValidity(struct SymbolTable *st, int index);
 int printSymbolTableEntry(struct SymbolTableRecord *symbolTableRecord, FILE *dfp);
+int getIndexByKind(struct SymbolTable *this, enum KIND kind);
