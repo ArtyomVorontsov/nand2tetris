@@ -140,8 +140,7 @@ int printTabs(FILE *dfp)
 
 int printTag(char *tag, FILE *dfp)
 {
-	int t = printTabs(dfp);
-	return fprintf(dfp, "%s\n", tag) + t;
+	return fprintf(dfp, "%s\n", tag);
 }
 
 bool compileClass(FILE *sfp, FILE *dfp)
@@ -1870,7 +1869,7 @@ bool compileKeywordConstant(FILE *sfp, FILE *dfp)
 	}
 	else if (token = getToken(sfp), ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, isThisKeywordConstant, &ptrMoved, &destFilePtrMoved))
 	{
-		
+
 		// 'this'
 		// Handle symbol table
 		struct SymbolTableRecord *symbolTableRecord = registerSymbolInSymbolTableStack(token, USAGE, UNDEFINED, ARG, SYMBOL_TABLES_STACK);

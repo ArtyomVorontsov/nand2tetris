@@ -38,13 +38,26 @@ for folder in "${folders[@]}"; do
 
         ./jack-compiler.out ./test-programs/programs/${folder}/${file} >> /dev/null
 
+        # format snapshot files
+        (cat ./test-programs/snapshots/${folder}/${file%.*}.xml |
+        sed -E 's|>([^<[:space:]]+)<|> \1 <|g' |
+        xmllint --format  - > ./test-programs/snapshots/${folder}/${file%.*}.tmp) &&
+        mv ./test-programs/snapshots/${folder}/${file%.*}.tmp ./test-programs/snapshots/${folder}/${file%.*}.xml
+
+        # format compiled files
+        (cat ./${file%.*}.xml | 
+        sed -E 's|>([^<[:space:]]+)<|> \1 <|g' | 
+        xmllint --format  - > ./${file%.*}.tmp) && 
+        mv ./${file%.*}.tmp ./${file%.*}.xml
+
         res=$(diff ./test-programs/snapshots/${folder}/${file%.*}.xml ./${file%.*}.xml)
 
         if [ -n "$res" ]; then
             echo "${folder} ${file} - NOT OK" >> ${rootDir}/test-result/test-result.txt 
             mkdir  ${rootDir}/test-result/${folder} 2> /dev/null
-            echo $res > ${rootDir}/test-result/${folder}/${file%.*}.txt
-            cat ./${file%.*}.xml > ${rootDir}/test-result/${folder}/${file%.*}.txt
+            cat ./${file%.*}.xml > ${rootDir}/test-result/${folder}/${file%.*}.xml
+            cat ./test-programs/snapshots/${folder}/${file%.*}.xml > ${rootDir}/test-result/${folder}/${file%.*}-snapshot.xml
+            echo $res > ${rootDir}/test-result/${folder}/${file%.*}Diff.xml
         else 
             echo "${folder}/${file} - OK" >> ${rootDir}/test-result/test-result.txt 
         fi
@@ -54,4 +67,4 @@ done
 
 # cleanup
 cd $rootDir
-rm -rf  ./test 
+# rm -rf  ./test 
