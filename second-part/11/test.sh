@@ -67,4 +67,4 @@ done
 
 # cleanup
 cd $rootDir
-# rm -rf  ./test 
+rm -rf  ./test 
