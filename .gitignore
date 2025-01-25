@@ -5,6 +5,6 @@ text.hack
 text.vm
 a.hack
 .gdb_history
-*.xml
+/!(snapshots)/*/*.xml
 test-result
 test
