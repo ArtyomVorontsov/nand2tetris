@@ -32,7 +32,7 @@ bool compileExpression(FILE *sfp, FILE *dfp, FILE *dfpvm);
 bool compileExpressionList(FILE *sfp, FILE *dfp, FILE *dfpvm);
 bool compileTerm(FILE *sfp, FILE *dfp, FILE *dfpvm);
 bool compileUnaryOp(FILE *sfp, FILE *dfp, FILE *dfpvm);
-bool compileOp(FILE *sfp, FILE *dfp, FILE *dfpvm);
+bool compileOp(FILE *sfp, FILE *dfp, FILE *dfpvm, char *op);
 bool compileKeywordConstant(FILE *sfp, FILE *dfp, FILE *dfpvm);
 bool indexingExpression(FILE *sfp, FILE *dfp, FILE *dfpvm);
 void incrementDepth();

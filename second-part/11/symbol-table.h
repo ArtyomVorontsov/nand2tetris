@@ -22,7 +22,7 @@ struct SymbolTable
 {
     GList *list;
     void (*reset)(struct SymbolTable *this);
-    struct SymbolTableRecord *(*define)(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, GList *SYMBOL_TABLES_STACK);
+    struct SymbolTableRecord *(*define)(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, int argsAmount, GList *SYMBOL_TABLES_STACK);
     int (*varCount)(struct SymbolTable *this, enum KIND kind);
     enum KIND (*kindOf)(struct SymbolTable *this, char *name);
     char *(*typeOf)(struct SymbolTable *this, char *name);
@@ -38,12 +38,13 @@ struct SymbolTableRecord
     enum KIND kind;
     int index;
     enum USAGE_TYPE usage;
+    int argsAmount;
 };
 
 struct SymbolTable *createSymbolTable();
 void reset(struct SymbolTable *this);
 struct SymbolTable *revert(struct SymbolTable *this);
-struct SymbolTableRecord *define(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, GList *SYMBOL_TABLES_STACK);
+struct SymbolTableRecord *define(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, int argsAmount, GList *SYMBOL_TABLES_STACK);
 int varCount(struct SymbolTable *this, enum KIND kind);
 enum KIND kindOf(struct SymbolTable *this, char *name);
 char *typeOf(struct SymbolTable *this, char *name);
@@ -61,5 +62,6 @@ int printSymbolTableEntry(struct SymbolTableRecord *symbolTableRecord, FILE *dfp
 int getIndexByKind(struct SymbolTable *this, enum KIND kind);
 struct SymbolTableRecord *getCurrentClass(GList *symbolTablesStack);
 struct SymbolTable *getCurrentSymbolTable(GList *symbolTablesStack);
-struct SymbolTableRecord *getCurrentSubroutineSymbolTableRecord(struct SymbolTable *currentSymbolTable);
-int getCurrentSubroutineArgsAmount(struct SymbolTable *currentSymbolTable);
+struct SymbolTableRecord *getLastSubroutineSymbolTableRecord(struct SymbolTable *currentSymbolTable);
+struct SymbolTableRecord *getLastClassSymbolTableRecord(struct SymbolTable *currentSymbolTable);
+int getLastSubroutineArgsAmount(struct SymbolTable *currentSymbolTable);

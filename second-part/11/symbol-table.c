@@ -74,6 +74,7 @@ struct SymbolTableRecord *registerSymbolInSymbolTableStack(char *token, enum USA
                                                   typeForSymbolTableFromSymbolTable,
                                                   kindForSymbolTableFromSymbolTable,
                                                   usageType,
+                                                  0,
                                                   symbolTableStack);
                 break;
             }
@@ -83,6 +84,33 @@ struct SymbolTableRecord *registerSymbolInSymbolTableStack(char *token, enum USA
             if (stackDepth < 1)
             {
                 printf("Variable %s definition not found!\n", token);
+
+                // Register OS functions
+                struct SymbolTable *currentSymbolTable = getCurrentSymbolTable(symbolTableStack);
+
+                if (strcmp(token, "<identifier> Output </identifier>") == 0)
+                {
+
+                    return currentSymbolTable->define(currentSymbolTable,
+                                                      nameForSymbolTable,
+                                                      "<identifier> void </identifier>",
+                                                      CLASS,
+                                                      USAGE,
+                                                      0,
+                                                      symbolTableStack);
+                }
+
+                if (strcmp(token, "<identifier> printInt </identifier>") == 0)
+                {
+
+                    return currentSymbolTable->define(currentSymbolTable,
+                                                      nameForSymbolTable,
+                                                      "<identifier> void </identifier>",
+                                                      SUBROUTINE,
+                                                      USAGE,
+                                                      1,
+                                                      symbolTableStack);
+                }
             }
         }
     }
@@ -90,7 +118,7 @@ struct SymbolTableRecord *registerSymbolInSymbolTableStack(char *token, enum USA
     {
         // If identifier is declared then we write declaration to symbol table
         struct SymbolTable *symbolTable = symbolTableStackPeek(symbolTableStack);
-        return symbolTable->define(symbolTable, nameForSymbolTable, typeForSymbolTable, kindForSymbolTable, usageType, symbolTableStack);
+        return symbolTable->define(symbolTable, nameForSymbolTable, typeForSymbolTable, kindForSymbolTable, usageType, 0, symbolTableStack);
     }
 
     return NULL;
@@ -139,7 +167,7 @@ void reset(struct SymbolTable *this)
     g_list_free_full(this->list, (GDestroyNotify)g_free);
 }
 
-struct SymbolTableRecord *define(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, GList *SYMBOL_TABLES_STACK)
+struct SymbolTableRecord *define(struct SymbolTable *this, char *name, char *type, enum KIND kind, enum USAGE_TYPE usage, int argsAmount, GList *SYMBOL_TABLES_STACK)
 {
     struct SymbolTableRecord *symbolTableRecord = malloc(sizeof(struct SymbolTableRecord));
 
@@ -147,6 +175,7 @@ struct SymbolTableRecord *define(struct SymbolTable *this, char *name, char *typ
     symbolTableRecord->type = g_strdup(type);
     symbolTableRecord->kind = kind;
     symbolTableRecord->usage = usage;
+    symbolTableRecord->argsAmount = argsAmount;
 
     if (usage == DECLARATION)
     {
@@ -371,38 +400,38 @@ void checkSymbolTableStackValidity(GList *sts)
 
 int printSymbolTableEntry(struct SymbolTableRecord *symbolTableRecord, FILE *dfp)
 {
-    int destFilePtrMoved = 0;
+    // int destFilePtrMoved = 0;
 
-    if (symbolTableRecord == NULL)
-    {
-        return destFilePtrMoved;
-    }
+    // if (symbolTableRecord == NULL)
+    // {
+    //     return destFilePtrMoved;
+    // }
 
-    char *symbolTableRecordOpenTag = "<symbolTableRecord>";
-    char *symbolTableRecordCloseTag = "</symbolTableRecord>";
-    char name[100];
-    char type[100];
-    char kind[100];
-    char index[100];
-    char usage[100];
+    // char *symbolTableRecordOpenTag = "<symbolTableRecord>";
+    // char *symbolTableRecordCloseTag = "</symbolTableRecord>";
+    // char name[100];
+    // char type[100];
+    // char kind[100];
+    // char index[100];
+    // char usage[100];
 
-    sprintf(name, "<name> %s </name>", symbolTableRecord->name);
-    sprintf(type, "<type> %s </type>", symbolTableRecord->type);
-    sprintf(kind, "<kind> %d </kind>", symbolTableRecord->kind);
-    sprintf(index, "<index> %d </index>", symbolTableRecord->index);
-    sprintf(usage, "<usage> %d </usage>", symbolTableRecord->usage);
+    // sprintf(name, "<name> %s </name>", symbolTableRecord->name);
+    // sprintf(type, "<type> %s </type>", symbolTableRecord->type);
+    // sprintf(kind, "<kind> %d </kind>", symbolTableRecord->kind);
+    // sprintf(index, "<index> %d </index>", symbolTableRecord->index);
+    // sprintf(usage, "<usage> %d </usage>", symbolTableRecord->usage);
 
-    destFilePtrMoved += printTag(symbolTableRecordOpenTag, dfp);
-    incrementDepth();
-    destFilePtrMoved += printTag(name, dfp);
-    destFilePtrMoved += printTag(type, dfp);
-    destFilePtrMoved += printTag(kind, dfp);
-    destFilePtrMoved += printTag(index, dfp);
-    destFilePtrMoved += printTag(usage, dfp);
-    decrementDepth();
-    destFilePtrMoved += printTag(symbolTableRecordCloseTag, dfp);
+    // destFilePtrMoved += printTag(symbolTableRecordOpenTag, dfp);
+    // incrementDepth();
+    // destFilePtrMoved += printTag(name, dfp);
+    // destFilePtrMoved += printTag(type, dfp);
+    // destFilePtrMoved += printTag(kind, dfp);
+    // destFilePtrMoved += printTag(index, dfp);
+    // destFilePtrMoved += printTag(usage, dfp);
+    // decrementDepth();
+    // destFilePtrMoved += printTag(symbolTableRecordCloseTag, dfp);
 
-    return destFilePtrMoved;
+    return 0;
 }
 
 struct SymbolTableRecord *getCurrentClass(GList *symbolTablesStack)
@@ -419,7 +448,7 @@ struct SymbolTable *getCurrentSymbolTable(GList *symbolTablesStack)
     return currentSymbolTable;
 }
 
-int getCurrentSubroutineArgsAmount(struct SymbolTable *currentSymbolTable)
+int getLastSubroutineArgsAmount(struct SymbolTable *currentSymbolTable)
 {
     int argsAmount = 0;
     GList *symbolTablePtr = g_list_last(currentSymbolTable->list);
@@ -438,7 +467,7 @@ int getCurrentSubroutineArgsAmount(struct SymbolTable *currentSymbolTable)
     }
 }
 
-struct SymbolTableRecord *getCurrentSubroutineSymbolTableRecord(struct SymbolTable *currentSymbolTable)
+struct SymbolTableRecord *getLastSubroutineSymbolTableRecord(struct SymbolTable *currentSymbolTable)
 {
     GList *symbolTablePtr = g_list_last(currentSymbolTable->list);
     struct SymbolTableRecord *symbolTableRecordPtr;
@@ -448,6 +477,26 @@ struct SymbolTableRecord *getCurrentSubroutineSymbolTableRecord(struct SymbolTab
     {
         symbolTableRecordPtr = symbolTablePtr->data;
         if (symbolTableRecordPtr->kind == SUBROUTINE)
+        {
+            break;
+        }
+
+        symbolTablePtr = symbolTablePtr->prev;
+    }
+
+    return symbolTableRecordPtr;
+}
+
+struct SymbolTableRecord *getLastClassSymbolTableRecord(struct SymbolTable *currentSymbolTable)
+{
+    GList *symbolTablePtr = g_list_last(currentSymbolTable->list);
+    struct SymbolTableRecord *symbolTableRecordPtr;
+    char *subroutineName = NULL;
+
+    while (symbolTablePtr)
+    {
+        symbolTableRecordPtr = symbolTablePtr->data;
+        if (symbolTableRecordPtr->kind == CLASS)
         {
             break;
         }

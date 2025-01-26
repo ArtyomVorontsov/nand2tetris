@@ -27,37 +27,56 @@ mapfile -t folders < <(ls ./test-programs/programs)
 
 for folder in "${folders[@]}"; do
 
-    echo "Test run for individual folder ${folder}" 
+    echo "Compile files in each individual folder ${folder}" 
 
     # Store file names in an array
     mapfile -t files < <(ls ./test-programs/programs/${folder})
+    mkdir ${folder} 
+    cd ${folder}
+    for file in "${files[@]}"; do
+        echo "Compile run for individual file ${file}"
+
+        ../jack-compiler.out ../test-programs/programs/${folder}/${file} >> /dev/null
+    done   
+    cd ..
+done
+
+
+for folder in "${folders[@]}"; do
+
+    echo "Test run for individual folder ${folder}" 
+
+    # Store file names in an array
+    mapfile -t files < <(ls ./test-programs/snapshots/${folder})
 
     for file in "${files[@]}"; do
 
-        echo "Test run for individual file ${file}"
+        echo "Test run for individual snapshot ${file}"
 
-        ./jack-compiler.out ./test-programs/programs/${folder}/${file} >> /dev/null
 
-        # format snapshot files
-        (cat ./test-programs/snapshots/${folder}/${file%.*}.xml |
-        sed -E 's|>([^<[:space:]]+)<|> \1 <|g' |
-        xmllint --format  - > ./test-programs/snapshots/${folder}/${file%.*}.tmp) &&
-        mv ./test-programs/snapshots/${folder}/${file%.*}.tmp ./test-programs/snapshots/${folder}/${file%.*}.xml
+        if [[ "$file" == *.xml ]]; then
+            # format snapshot files
+            (cat ./test-programs/snapshots/${folder}/${file%.*}.xml |
+            sed -E 's|>([^<[:space:]]+)<|> \1 <|g' |
+            xmllint --format  - > ./test-programs/snapshots/${folder}/${file%.*}.tmp) &&
+            mv ./test-programs/snapshots/${folder}/${file%.*}.tmp ./test-programs/snapshots/${folder}/${file%.*}.xml
 
-        # format compiled files
-        (cat ./${file%.*}.xml | 
-        sed -E 's|>([^<[:space:]]+)<|> \1 <|g' | 
-        xmllint --format  - > ./${file%.*}.tmp) && 
-        mv ./${file%.*}.tmp ./${file%.*}.xml
+            # format compiled files
+            (cat ./${folder}/${file%.*}.xml | 
+            sed -E 's|>([^<[:space:]]+)<|> \1 <|g' | 
+            xmllint --format  - > ./${folder}/${file%.*}.tmp) && 
+            mv ./${folder}/${file%.*}.tmp ./${folder}/${file%.*}.xml
 
-        res=$(diff ./test-programs/snapshots/${folder}/${file%.*}.xml ./${file%.*}.xml)
+        fi
+
+        res=$(diff ./test-programs/snapshots/${folder}/${file} ./${folder}/${file})
 
         if [ -n "$res" ]; then
             echo "${folder} ${file} - NOT OK" >> ${rootDir}/test-result/test-result.txt 
             mkdir  ${rootDir}/test-result/${folder} 2> /dev/null
-            cat ./${file%.*}.xml > ${rootDir}/test-result/${folder}/${file%.*}.xml
-            cat ./test-programs/snapshots/${folder}/${file%.*}.xml > ${rootDir}/test-result/${folder}/${file%.*}-snapshot.xml
-            echo $res > ${rootDir}/test-result/${folder}/${file%.*}Diff.xml
+            cat ./${folder}/${file} > ${rootDir}/test-result/${folder}/${file}
+            cat ./test-programs/snapshots/${folder}/${file} > ${rootDir}/test-result/${folder}/${file}-snapshot
+            echo $res > ${rootDir}/test-result/${folder}/${file}-diff
         else 
             echo "${folder}/${file} - OK" >> ${rootDir}/test-result/test-result.txt 
         fi

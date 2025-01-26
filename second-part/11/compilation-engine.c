@@ -581,8 +581,8 @@ bool compileSubroutine(FILE *sfp, FILE *dfp, FILE *dfpvm)
 	{
 		struct SymbolTable *currentSymbolTable = getCurrentSymbolTable(SYMBOL_TABLES_STACK);
 		char *currentClassName = getCurrentClass(SYMBOL_TABLES_STACK)->name;
-		int currentSubroutineArgsAmount = getCurrentSubroutineArgsAmount(currentSymbolTable);
-		char *currentSubroutineName = getCurrentSubroutineSymbolTableRecord(currentSymbolTable)->name;
+		int currentSubroutineArgsAmount = getLastSubroutineArgsAmount(currentSymbolTable);
+		char *currentSubroutineName = getLastSubroutineSymbolTableRecord(currentSymbolTable)->name;
 		char label[100];
 
 		sprintf(
@@ -882,8 +882,22 @@ bool compileSubroutineCall(FILE *sfp, FILE *dfp, FILE *dfpvm)
 		return false;
 	}
 
-	// decrementDepth();
-	// printTag("</subroutineCall>", dfp);
+	// Generate vm code
+	struct SymbolTable *currentSymbolTable = getCurrentSymbolTable(SYMBOL_TABLES_STACK);
+	struct SymbolTableRecord *lastSubroutine = getLastSubroutineSymbolTableRecord(currentSymbolTable);
+	struct SymbolTableRecord *lastClass = getLastClassSymbolTableRecord(currentSymbolTable);
+	char label[100];
+
+	sprintf(
+		label, "%s.%s %d",
+		getXMLTagValue(lastClass->name),
+		getXMLTagValue(lastSubroutine->name),
+		lastSubroutine->argsAmount);
+
+	writeCall(dfpvm, label);
+	writePop(dfpvm, TEMP_SEG, 0);
+	writePush(dfpvm, CONSTANT_SEG, 0);
+
 	return true;
 }
 
@@ -1600,6 +1614,7 @@ bool compileReturn(FILE *sfp, FILE *dfp, FILE *dfpvm)
 		decrementDepth();
 		return false;
 	}
+	writeReturn(dfpvm);
 
 	decrementDepth();
 	printTag("</returnStatement>", dfp);
@@ -1630,8 +1645,23 @@ bool compileExpression(FILE *sfp, FILE *dfp, FILE *dfpvm)
 
 	while (true)
 	{
-		if (compileOp(sfp, dfp, dfpvm) && compileTerm(sfp, dfp, dfpvm))
+		char op;
+
+		if (compileOp(sfp, dfp, dfpvm, &op) && compileTerm(sfp, dfp, dfpvm))
 		{
+			switch (op)
+			{
+			case '+':
+				writeArithmetic(dfpvm, ADD);
+				break;
+
+			case '*':
+				writeCall(dfpvm, "Math.multiply 2");
+				break;
+
+			default:
+				break;
+			}
 			continue;
 		}
 		break;
@@ -1699,9 +1729,11 @@ bool compileTerm(FILE *sfp, FILE *dfp, FILE *dfpvm)
 	int destFilePtrMovedForTermTag = printTag("<term>", dfp);
 	incrementDepth();
 
-	if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, dfpvm, isIntConstTag, &ptrMoved, &destFilePtrMoved))
+	if (token = getToken(sfp), ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, dfpvm, isIntConstTag, &ptrMoved, &destFilePtrMoved))
 	{
 		// integerConstant
+		// Generate vm code
+		writePush(dfpvm, CONSTANT_SEG, atoi(getXMLTagValue(token)));
 	}
 	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, dfpvm, isStringConstTag, &ptrMoved, &destFilePtrMoved))
 	{
@@ -1816,7 +1848,7 @@ bool compileUnaryOp(FILE *sfp, FILE *dfp, FILE *dfpvm)
 	return true;
 }
 
-bool compileOp(FILE *sfp, FILE *dfp, FILE *dfpvm)
+bool compileOp(FILE *sfp, FILE *dfp, FILE *dfpvm, char *op)
 {
 	printMsg("compileOp");
 	// '+' | '-' | '*' | '/' | '&' | '|' | '<' | '>' | '='
@@ -1828,6 +1860,7 @@ bool compileOp(FILE *sfp, FILE *dfp, FILE *dfpvm)
 	if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, dfpvm, isPlusSignTag, &ptrMoved, &destFilePtrMoved))
 	{
 		// '+'
+		*op = '+';
 	}
 	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, dfpvm, isMinusSignTag, &ptrMoved, &destFilePtrMoved))
 	{
@@ -1836,6 +1869,7 @@ bool compileOp(FILE *sfp, FILE *dfp, FILE *dfpvm)
 	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, dfpvm, isMultiplySignTag, &ptrMoved, &destFilePtrMoved))
 	{
 		// '*'
+		*op = '*';
 	}
 	else if (ptrMoved = 0, destFilePtrMoved = 0, compileTag(sfp, dfp, dfpvm, isDivideSignTag, &ptrMoved, &destFilePtrMoved))
 	{
