@@ -2,14 +2,14 @@
 
 enum SEGMENT
 {
-    CONSTANT,
-    ARGUMENT,
-    LOCAL,
-    STATIC,
-    THIS,
-    THAT,
-    POINTER,
-    TEMP
+    CONSTANT_SEG,
+    ARGUMENT_SEG,
+    LOCAL_SEG,
+    STATIC_SEG,
+    THIS_SEG,
+    THAT_SEG,
+    POINTER_SEG,
+    TEMP_SEG
 };
 
 enum COMMAND

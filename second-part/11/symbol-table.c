@@ -404,3 +404,56 @@ int printSymbolTableEntry(struct SymbolTableRecord *symbolTableRecord, FILE *dfp
 
     return destFilePtrMoved;
 }
+
+struct SymbolTableRecord *getCurrentClass(GList *symbolTablesStack)
+{
+    struct SymbolTableRecord *currentClass = ((struct SymbolTableRecord *)(g_list_first(((struct SymbolTable *)(g_list_first(symbolTablesStack)->data))->list)->data));
+
+    return currentClass;
+}
+
+struct SymbolTable *getCurrentSymbolTable(GList *symbolTablesStack)
+{
+    struct SymbolTable *currentSymbolTable = (struct SymbolTable *)g_list_last(symbolTablesStack)->data;
+
+    return currentSymbolTable;
+}
+
+int getCurrentSubroutineArgsAmount(struct SymbolTable *currentSymbolTable)
+{
+    int argsAmount = 0;
+    GList *symbolTablePtr = g_list_last(currentSymbolTable->list);
+    struct SymbolTableRecord *symbolTableRecordPtr;
+    char *subroutineName = NULL;
+
+    while (symbolTablePtr)
+    {
+        symbolTableRecordPtr = symbolTablePtr->data;
+        if (symbolTableRecordPtr->kind == ARG)
+        {
+            argsAmount++;
+        }
+
+        symbolTablePtr = symbolTablePtr->prev;
+    }
+}
+
+struct SymbolTableRecord *getCurrentSubroutineSymbolTableRecord(struct SymbolTable *currentSymbolTable)
+{
+    GList *symbolTablePtr = g_list_last(currentSymbolTable->list);
+    struct SymbolTableRecord *symbolTableRecordPtr;
+    char *subroutineName = NULL;
+
+    while (symbolTablePtr)
+    {
+        symbolTableRecordPtr = symbolTablePtr->data;
+        if (symbolTableRecordPtr->kind == SUBROUTINE)
+        {
+            break;
+        }
+
+        symbolTablePtr = symbolTablePtr->prev;
+    }
+
+    return symbolTableRecordPtr;
+}

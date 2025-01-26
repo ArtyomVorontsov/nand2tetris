@@ -59,3 +59,7 @@ void checkSymbolTableStackValidity(GList *sts);
 void checkSymbolTableValidity(struct SymbolTable *st, int index);
 int printSymbolTableEntry(struct SymbolTableRecord *symbolTableRecord, FILE *dfp);
 int getIndexByKind(struct SymbolTable *this, enum KIND kind);
+struct SymbolTableRecord *getCurrentClass(GList *symbolTablesStack);
+struct SymbolTable *getCurrentSymbolTable(GList *symbolTablesStack);
+struct SymbolTableRecord *getCurrentSubroutineSymbolTableRecord(struct SymbolTable *currentSymbolTable);
+int getCurrentSubroutineArgsAmount(struct SymbolTable *currentSymbolTable);

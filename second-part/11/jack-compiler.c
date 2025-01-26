@@ -10,12 +10,13 @@ char *SourceFileName;
 char *SourceFileNameWithoutExt;
 
 int main(int argc, char **argv)
-                                                                                                                                                                                                                           {
+{
 	char *filePath = *(argv + 1);
 	char *destFileName;
+	char *destFileNameVM;
 	const int MAX_LINE_SIZE = 1000;
 	char line[MAX_LINE_SIZE];
-	FILE *sfp, *dfp;
+	FILE *sfp, *dfp, *dfpvm;
 	int i = 0;
 	DIR *dirP = opendir(filePath);
 	struct dirent *dir;
@@ -49,9 +50,11 @@ int main(int argc, char **argv)
 		SourceFileName = destFileName;
 		SourceFileNameWithoutExt = getFileNameWithoutExtension(destFileName);
 		destFileName = getDestFileName(filePath, ".xml");
+		destFileNameVM = getDestFileName(filePath, ".vm");
 		sfp = fopen(SourceFileName, "r");
 		dfp = fopen(destFileName, "w");
-		compilationEngine(sfp, dfp);
+		dfpvm = fopen(destFileNameVM, "w");
+		compilationEngine(sfp, dfp, dfpvm);
 		fclose(sfp);
 		fclose(dfp);
 	}
@@ -105,8 +108,8 @@ char *getFileNameWithoutExtension(char *fileName)
 
 void compileDirectoryFiles(DIR *dirP, char *filePath)
 {
-	char *sourceFileName, *destFileName;
-	FILE *sfp, *dfp;
+	char *sourceFileName, *destFileName, destFileNameVM;
+	FILE *sfp, *dfp, *dfpvm;
 	struct dirent *dir;
 
 	dir = readdir(dirP);
@@ -115,6 +118,7 @@ void compileDirectoryFiles(DIR *dirP, char *filePath)
 	{
 		sourceFileName = malloc(sizeof(char) * 200);
 		destFileName = malloc(sizeof(char) * 200);
+		destFileNameVM = malloc(sizeof(char) * 200);
 
 		if (dir->d_type != DT_DIR)
 		{
@@ -146,11 +150,13 @@ void compileDirectoryFiles(DIR *dirP, char *filePath)
 			strcat(destFileName, "/");
 			strcat(destFileName, dir->d_name);
 			destFileName = getDestFileName(destFileName, ".xml");
+			destFileNameVM = getDestFileName(destFileName, ".vm");
 
 			sfp = fopen(SourceFileName, "r");
 			dfp = fopen(destFileName, "w");
+			dfpvm = fopen(destFileNameVM, "w");
 
-			compilationEngine(sfp, dfp);
+			compilationEngine(sfp, dfp, dfpvm);
 
 			fclose(sfp);
 			fclose(dfp);

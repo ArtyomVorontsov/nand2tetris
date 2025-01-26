@@ -31,6 +31,7 @@ void writeCall(FILE *dfp, char *label)
 
 void writeFunction(FILE *dfp, char *label)
 {
+    fprintf(dfp, "function %s\n", label);
 }
 
 void writeReturn(FILE *dfp)
