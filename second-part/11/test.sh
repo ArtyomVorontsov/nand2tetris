@@ -72,13 +72,17 @@ for folder in "${folders[@]}"; do
         res=$(diff ./test-programs/snapshots/${folder}/${file} ./${folder}/${file})
 
         if [ -n "$res" ]; then
-            echo "${folder} ${file} - NOT OK" >> ${rootDir}/test-result/test-result.txt 
+            echo "${folder}/${file} - NOT OK" >> ${rootDir}/test-result/test-result.txt 
             mkdir  ${rootDir}/test-result/${folder} 2> /dev/null
             cat ./${folder}/${file} > ${rootDir}/test-result/${folder}/${file}
             cat ./test-programs/snapshots/${folder}/${file} > ${rootDir}/test-result/${folder}/${file}-snapshot
             echo $res > ${rootDir}/test-result/${folder}/${file}-diff
         else 
-            echo "${folder}/${file} - OK" >> ${rootDir}/test-result/test-result.txt 
+            if [$? -eq 0]; then
+                echo "${folder}/${file} - OK" >> ${rootDir}/test-result/test-result.txt 
+            else 
+                echo "${folder}/${file} - NOT OK" >> ${rootDir}/test-result/test-result.txt 
+            fi
         fi
     done   
 done
