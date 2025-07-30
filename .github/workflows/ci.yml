@@ -18,4 +18,5 @@ jobs:
         run: chmod +x ./second-part/11/test.sh
 
       - name: Run the script
-        run: ./second-part/11/test.sh
+        working-directory: ./second-part/11
+        run: ./test.sh -v

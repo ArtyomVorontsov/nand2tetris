@@ -20,12 +20,6 @@ done;
 # root dir 
 rootDir=$(pwd)
 
-echo $rootDir
-cd ${rootDir}/second-part/11
-# compile compiler 
-make 
-cd -
-
 # report result dump
 rm -rf ${rootDir}/test-result
 mkdir ${rootDir}/test-result
@@ -37,16 +31,16 @@ rm -rf ./test
 mkdir ./test
 
 # copy jack compiler to test folder  
-cp ${rootDir}/second-part/11/jack-compiler.out ./test
+cp ${rootDir}/jack-compiler.out ./test
 
 # copy test programs
-cp -r ${rootDir}/second-part/11/test-programs ./test
+cp -r ${rootDir}/test-programs ./test
 
 # cd in test
 cd test
 
 # Store file names in an array
-mapfile -t folders < <(ls ./test-programs/programs)
+mapfile -t folders < <(ls ${rootDir}/test-programs/programs)
 
 for folder in "${folders[@]}"; do
 
@@ -63,7 +57,7 @@ for folder in "${folders[@]}"; do
             echo "Compile run for individual file ${file}"
         fi
 
-        ${rootDir}/secondPart/11/jack-compiler.out ${rootDir}/secondPart/11/test-programs/programs/${folder}/${file} >> /dev/null
+        ${rootDir}/jack-compiler.out ${rootDir}/test-programs/programs/${folder}/${file} >> /dev/null
     done   
     cd ..
 done
