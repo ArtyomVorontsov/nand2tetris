@@ -97,6 +97,7 @@ char *advance(FILE **sfp)
 			isStringConstant == false &&
 			((c == ' ') ||
 			 (c == '\n') ||
+			 (c == '\r') ||
 			 (c == '\t') ||
 			 (c == '\0') ||
 			 (c == -1) ||
@@ -131,6 +132,7 @@ char *advance(FILE **sfp)
 			isStringConstant == false &&
 			((c == ' ') ||
 			 (c == '\n') ||
+			 (c == '\r') ||
 			 (c == '\t') ||
 			 (c == '\0') ||
 			 (c == -1) ||
@@ -299,7 +301,7 @@ bool isBlank(char *token)
 {
 	char c = token[0];
 
-	return (c == ' ') || (c == '\n') || (c == '\t') || (c == '\0') || (c == -1);
+	return (c == ' ') || (c == '\n') || (c == '\t') || (c == '\0') || (c == -1) || (c == '\r');
 }
 
 void skipComments(FILE **sfp)

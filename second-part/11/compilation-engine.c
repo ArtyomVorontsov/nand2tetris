@@ -1656,7 +1656,7 @@ bool compileExpression(FILE *sfp, FILE *dfp, FILE *dfpvm)
 				break;
 
 			case '*':
-				writeCall(dfpvm, "Math.multiply 2");
+				writeCall(dfpvm, "Math.multiply 2  ");
 				break;
 
 			default:

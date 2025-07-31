@@ -40,7 +40,7 @@ void writeArithmetic(FILE *dfp, enum COMMAND command)
     switch (command)
     {
     case ADD:
-        fprintf(dfp, "add\n");
+        fprintf(dfp, "add  \n");
         break;
 
     default:
@@ -72,7 +72,7 @@ void writeFunction(FILE *dfp, char *label)
 
 void writeReturn(FILE *dfp)
 {
-    fprintf(dfp, "return\n");
+    fprintf(dfp, "return  \n");
 }
 
 void close(FILE *dfp)
