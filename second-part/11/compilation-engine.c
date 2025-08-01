@@ -494,7 +494,7 @@ bool compileSubroutine(FILE *sfp, FILE *dfp, FILE *dfpvm)
 	}
 
 	token = getToken(sfp);
-	if (strcmp(token, "<keyword> void </keyword>") == 0 || isIdentifierTag(token))
+	if (isIdentifierTag(token) || isKeywordTag(token))
 	{
 		// ('void' | type)
 		ptrMoved += moveFPToNextToken(sfp);
@@ -636,7 +636,7 @@ bool compileParameterList(FILE *sfp, FILE *dfp, FILE *dfpvm)
 	incrementDepth();
 
 	token = getToken(sfp);
-	if (isKeywordTag(token))
+	if (isKeywordTag(token) || isIdentifierTag(token))
 	{
 		// type
 		typeForSymbolTable = token;
@@ -696,7 +696,7 @@ bool compileParameterList(FILE *sfp, FILE *dfp, FILE *dfpvm)
 		}
 
 		token = getToken(sfp);
-		if (isKeywordTag(token))
+		if (isKeywordTag(token) || isIdentifierTag(token))
 		{
 			// type
 			typeForSymbolTable = token;
